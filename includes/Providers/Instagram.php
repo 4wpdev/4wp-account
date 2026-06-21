@@ -66,7 +66,7 @@ class Instagram extends BaseProvider {
 		$this->client_id     = $this->get_option( 'app_id' );
 		$this->client_secret = $this->get_option( 'app_secret' );
 		$this->redirect_uri  = $this->get_redirect_uri();
-		$this->scopes        = [ 'user_profile', 'user_media' ];
+		$this->scopes        = array( 'user_profile', 'user_media' );
 	}
 
 	/**
@@ -75,7 +75,7 @@ class Instagram extends BaseProvider {
 	 * @return bool
 	 */
 	public function is_enabled() {
-		return ! empty( $this->client_id ) && ! empty( $this->client_secret );
+		return $this->is_provider_toggled_on() && ! empty( $this->client_id ) && ! empty( $this->client_secret );
 	}
 
 	/**
@@ -87,13 +87,13 @@ class Instagram extends BaseProvider {
 		$state = wp_generate_password( 32, false );
 		set_transient( 'forwp_auth_instagram_state_' . $state, $state, 600 );
 
-		$params = [
+		$params = array(
 			'client_id'     => $this->client_id,
 			'redirect_uri'  => $this->redirect_uri,
 			'scope'         => implode( ',', $this->scopes ),
 			'response_type' => 'code',
 			'state'         => $state,
-		];
+		);
 
 		return $this->authorization_endpoint . '?' . http_build_query( $params );
 	}
@@ -110,7 +110,7 @@ class Instagram extends BaseProvider {
 		if ( ! empty( $state ) ) {
 			$stored_state = get_transient( 'forwp_auth_instagram_state_' . $state );
 			if ( $stored_state !== $state ) {
-				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-auth' ) );
+				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-account' ) );
 			}
 			delete_transient( 'forwp_auth_instagram_state_' . $state );
 		}
@@ -132,13 +132,13 @@ class Instagram extends BaseProvider {
 		}
 
 		// Create or update user
-		$user_data = [
-			'id'         => $user_info['id'],
-			'email'      => '', // Instagram doesn't provide email
-			'username'   => $user_info['username'] ?? '',
-			'name'       => $user_info['username'] ?? '',
-			'avatar'     => '',
-		];
+		$user_data = array(
+			'id'       => $user_info['id'],
+			'email'    => '', // Instagram doesn't provide email
+			'username' => $user_info['username'] ?? '',
+			'name'     => $user_info['username'] ?? '',
+			'avatar'   => '',
+		);
 
 		// Generate email from username if not available
 		if ( empty( $user_data['email'] ) ) {
@@ -155,10 +155,10 @@ class Instagram extends BaseProvider {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id );
 
-		return [
-			'user_id' => $user_id,
+		return array(
+			'user_id'   => $user_id,
 			'user_data' => $user_data,
-		];
+		);
 	}
 
 	/**
@@ -169,13 +169,13 @@ class Instagram extends BaseProvider {
 	 */
 	protected function exchange_code_for_token( $code ) {
 		$redirect_uri = $this->redirect_uri;
-		$url = add_query_arg(
-			[
+		$url          = add_query_arg(
+			array(
 				'client_id'     => $this->client_id,
 				'client_secret' => $this->client_secret,
 				'redirect_uri'  => $redirect_uri,
 				'code'          => $code,
-			],
+			),
 			$this->token_endpoint
 		);
 
@@ -202,10 +202,10 @@ class Instagram extends BaseProvider {
 	 */
 	protected function get_user_info( $access_token ) {
 		$url = add_query_arg(
-			[
+			array(
 				'fields'       => 'id,username',
 				'access_token' => $access_token,
-			],
+			),
 			$this->user_info_endpoint
 		);
 
@@ -233,8 +233,3 @@ class Instagram extends BaseProvider {
 		return home_url( '/wp-json/forwp-auth/v1/callback/instagram' );
 	}
 }
-
-
-
-
-

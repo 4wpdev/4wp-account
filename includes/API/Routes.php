@@ -46,7 +46,7 @@ class Routes {
 	 * Initialize
 	 */
 	private function init() {
-		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
@@ -59,22 +59,22 @@ class Routes {
 		register_rest_route(
 			$namespace,
 			'/auth/(?P<provider>[a-zA-Z0-9-]+)',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'get_auth_url' ],
+				'callback'            => array( $this, 'get_auth_url' ),
 				'permission_callback' => '__return_true',
-			]
+			)
 		);
 
 		// OAuth callbacks
 		register_rest_route(
 			$namespace,
 			'/callback/(?P<provider>[a-zA-Z0-9-]+)',
-			[
+			array(
 				'methods'             => 'GET',
-				'callback'            => [ $this, 'handle_callback' ],
+				'callback'            => array( $this, 'handle_callback' ),
 				'permission_callback' => '__return_true',
-			]
+			)
 		);
 	}
 
@@ -88,22 +88,22 @@ class Routes {
 		$provider_id = $request->get_param( 'provider' );
 
 		$auth_manager = \ForWP\Auth\Auth\AuthManager::get_instance();
-		$provider = $auth_manager->get_provider( $provider_id );
+		$provider     = $auth_manager->get_provider( $provider_id );
 
 		if ( ! $provider ) {
-			return new \WP_Error( 'invalid_provider', __( 'Invalid provider', '4wp-auth' ), [ 'status' => 400 ] );
+			return new \WP_Error( 'invalid_provider', __( 'Invalid provider', '4wp-account' ), array( 'status' => 400 ) );
 		}
 
 		if ( ! $provider->is_enabled() ) {
-			return new \WP_Error( 'provider_disabled', __( 'Provider is not enabled', '4wp-auth' ), [ 'status' => 403 ] );
+			return new \WP_Error( 'provider_disabled', __( 'Provider is not enabled', '4wp-account' ), array( 'status' => 403 ) );
 		}
 
 		$auth_url = $provider->get_authorization_url();
 
 		return new \WP_REST_Response(
-			[
+			array(
 				'auth_url' => $auth_url,
-			],
+			),
 			200
 		);
 	}
@@ -116,9 +116,9 @@ class Routes {
 	 */
 	public function handle_callback( $request ) {
 		$provider_id = $request->get_param( 'provider' );
-		$code = $request->get_param( 'code' );
-		$state = $request->get_param( 'state' );
-		$error = $request->get_param( 'error' );
+		$code        = $request->get_param( 'code' );
+		$state       = $request->get_param( 'state' );
+		$error       = $request->get_param( 'error' );
 
 		if ( $error ) {
 			$error_description = $request->get_param( 'error_description' );
@@ -126,14 +126,14 @@ class Routes {
 		}
 
 		if ( empty( $code ) ) {
-			return $this->redirect_with_error( __( 'Authorization code is missing', '4wp-auth' ) );
+			return $this->redirect_with_error( __( 'Authorization code is missing', '4wp-account' ) );
 		}
 
 		$auth_manager = \ForWP\Auth\Auth\AuthManager::get_instance();
-		$provider = $auth_manager->get_provider( $provider_id );
+		$provider     = $auth_manager->get_provider( $provider_id );
 
 		if ( ! $provider ) {
-			return $this->redirect_with_error( __( 'Invalid provider', '4wp-auth' ) );
+			return $this->redirect_with_error( __( 'Invalid provider', '4wp-account' ) );
 		}
 
 		$result = $provider->handle_callback( $code, $state );
@@ -157,9 +157,9 @@ class Routes {
 	 */
 	private function redirect_with_error( $error_message ) {
 		$redirect_url = add_query_arg(
-			[
+			array(
 				'forwp_auth_error' => urlencode( $error_message ),
-			],
+			),
 			home_url( '/wp-login.php' )
 		);
 
@@ -167,8 +167,3 @@ class Routes {
 		exit;
 	}
 }
-
-
-
-
-

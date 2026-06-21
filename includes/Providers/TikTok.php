@@ -65,7 +65,7 @@ class TikTok extends BaseProvider {
 		$this->client_id     = $this->get_option( 'client_key' );
 		$this->client_secret = $this->get_option( 'client_secret' );
 		$this->redirect_uri  = $this->get_redirect_uri();
-		$this->scopes        = [ 'user.info.basic' ];
+		$this->scopes        = array( 'user.info.basic' );
 	}
 
 	/**
@@ -86,13 +86,13 @@ class TikTok extends BaseProvider {
 		$state = wp_generate_password( 32, false );
 		set_transient( 'forwp_auth_tiktok_state_' . $state, $state, 600 );
 
-		$params = [
+		$params = array(
 			'client_key'    => $this->client_id,
 			'redirect_uri'  => $this->redirect_uri,
 			'scope'         => implode( ',', $this->scopes ),
 			'response_type' => 'code',
 			'state'         => $state,
-		];
+		);
 
 		return $this->authorization_endpoint . '?' . http_build_query( $params );
 	}
@@ -109,7 +109,7 @@ class TikTok extends BaseProvider {
 		if ( ! empty( $state ) ) {
 			$stored_state = get_transient( 'forwp_auth_tiktok_state_' . $state );
 			if ( $stored_state !== $state ) {
-				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-auth' ) );
+				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-account' ) );
 			}
 			delete_transient( 'forwp_auth_tiktok_state_' . $state );
 		}
@@ -131,13 +131,13 @@ class TikTok extends BaseProvider {
 		}
 
 		// Create or update user
-		$user_data = [
-			'id'         => $user_info['open_id'] ?? $user_info['data']['user']['open_id'] ?? '',
-			'email'      => '', // TikTok doesn't provide email by default
-			'username'   => $user_info['data']['user']['display_name'] ?? '',
-			'name'       => $user_info['data']['user']['display_name'] ?? '',
-			'avatar'     => $user_info['data']['user']['avatar_url'] ?? '',
-		];
+		$user_data = array(
+			'id'       => $user_info['open_id'] ?? $user_info['data']['user']['open_id'] ?? '',
+			'email'    => '', // TikTok doesn't provide email by default
+			'username' => $user_info['data']['user']['display_name'] ?? '',
+			'name'     => $user_info['data']['user']['display_name'] ?? '',
+			'avatar'   => $user_info['data']['user']['avatar_url'] ?? '',
+		);
 
 		// Generate email from username if not available
 		if ( empty( $user_data['email'] ) ) {
@@ -154,10 +154,10 @@ class TikTok extends BaseProvider {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id );
 
-		return [
-			'user_id' => $user_id,
+		return array(
+			'user_id'   => $user_id,
 			'user_data' => $user_data,
-		];
+		);
 	}
 
 	/**
@@ -169,18 +169,18 @@ class TikTok extends BaseProvider {
 	protected function exchange_code_for_token( $code ) {
 		$response = wp_remote_post(
 			$this->token_endpoint,
-			[
-				'headers' => [
+			array(
+				'headers' => array(
 					'Content-Type' => 'application/x-www-form-urlencoded',
-				],
-				'body' => [
+				),
+				'body'    => array(
 					'client_key'    => $this->client_id,
 					'client_secret' => $this->client_secret,
 					'code'          => $code,
 					'grant_type'    => 'authorization_code',
 					'redirect_uri'  => $this->redirect_uri,
-				],
-			]
+				),
+			)
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -205,17 +205,17 @@ class TikTok extends BaseProvider {
 	protected function get_user_info( $access_token ) {
 		$response = wp_remote_post(
 			$this->user_info_endpoint,
-			[
-				'headers' => [
+			array(
+				'headers' => array(
 					'Authorization' => 'Bearer ' . $access_token,
 					'Content-Type'  => 'application/json',
-				],
-				'body' => wp_json_encode(
-					[
-						'fields' => [ 'open_id', 'union_id', 'avatar_url', 'display_name', 'username' ],
-					]
 				),
-			]
+				'body'    => wp_json_encode(
+					array(
+						'fields' => array( 'open_id', 'union_id', 'avatar_url', 'display_name', 'username' ),
+					)
+				),
+			)
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -240,8 +240,3 @@ class TikTok extends BaseProvider {
 		return home_url( '/wp-json/forwp-auth/v1/callback/tiktok' );
 	}
 }
-
-
-
-
-

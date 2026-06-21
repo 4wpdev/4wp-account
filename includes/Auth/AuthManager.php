@@ -28,7 +28,7 @@ class AuthManager {
 	 *
 	 * @var array
 	 */
-	private $providers = [];
+	private $providers = array();
 
 	/**
 	 * Get plugin instance
@@ -54,19 +54,19 @@ class AuthManager {
 	 */
 	private function init() {
 		$this->register_providers();
-		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 	/**
 	 * Register OAuth providers
 	 */
 	private function register_providers() {
-		$providers = [
+		$providers = array(
 			'gmail'     => '\ForWP\Auth\Providers\Gmail',
 			'facebook'  => '\ForWP\Auth\Providers\Facebook',
 			'instagram' => '\ForWP\Auth\Providers\Instagram',
 			// 'tiktok'     => '\ForWP\Auth\Providers\TikTok',
-		];
+		);
 
 		foreach ( $providers as $id => $class ) {
 			if ( class_exists( $class ) ) {
@@ -105,7 +105,7 @@ class AuthManager {
 		wp_enqueue_script(
 			'forwp-auth',
 			FORWP_AUTH_PLUGIN_URL . 'assets/js/auth.js',
-			[ 'jquery' ],
+			array( 'jquery' ),
 			FORWP_AUTH_VERSION,
 			true
 		);
@@ -113,18 +113,17 @@ class AuthManager {
 		wp_enqueue_style(
 			'forwp-auth',
 			FORWP_AUTH_PLUGIN_URL . 'assets/css/auth.css',
-			[],
+			array(),
 			FORWP_AUTH_VERSION
 		);
 
 		wp_localize_script(
 			'forwp-auth',
 			'forwpAuth',
-			[
+			array(
 				'apiUrl' => rest_url( 'forwp-auth/v1/' ),
-				'nonce'   => wp_create_nonce( 'forwp_auth_nonce' ),
-			]
+				'nonce'  => wp_create_nonce( 'forwp_auth_nonce' ),
+			)
 		);
 	}
 }
-

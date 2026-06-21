@@ -35,7 +35,7 @@ class Migrations {
 		global $wpdb;
 
 		$charset_collate = $wpdb->get_charset_collate();
-		$table_name = $wpdb->prefix . 'forwp_auth_users';
+		$table_name      = $wpdb->prefix . 'forwp_auth_users';
 
 		$sql = "CREATE TABLE IF NOT EXISTS $table_name (
 			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -56,8 +56,3 @@ class Migrations {
 		dbDelta( $sql );
 	}
 }
-
-
-
-
-

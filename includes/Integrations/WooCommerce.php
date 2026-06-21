@@ -56,10 +56,10 @@ class WooCommerce {
 		}
 
 		// Add social login buttons to WooCommerce login form
-		add_action( 'woocommerce_login_form_end', [ $this, 'render_login_buttons' ], 10 );
+		add_action( 'woocommerce_login_form_end', array( $this, 'render_login_buttons' ), 10 );
 
 		// Add social login buttons to WooCommerce registration form
-		add_action( 'woocommerce_register_form_end', [ $this, 'render_register_buttons' ], 10 );
+		add_action( 'woocommerce_register_form_end', array( $this, 'render_register_buttons' ), 10 );
 	}
 
 	/**
@@ -82,7 +82,7 @@ class WooCommerce {
 	private function render_buttons() {
 		// Get enabled providers
 		$providers = $this->get_enabled_providers();
-		
+
 		if ( empty( $providers ) ) {
 			return;
 		}
@@ -113,10 +113,10 @@ class WooCommerce {
 	 */
 	private function get_enabled_providers() {
 		$all_providers = array(
-			'gmail'     => __( 'Gmail', '4wp-auth' ),
-			'facebook'  => __( 'Facebook', '4wp-auth' ),
-			'instagram' => __( 'Instagram', '4wp-auth' ),
-			'tiktok'    => __( 'TikTok', '4wp-auth' ),
+			'gmail'     => __( 'Gmail', '4wp-account' ),
+			'facebook'  => __( 'Facebook', '4wp-account' ),
+			'instagram' => __( 'Instagram', '4wp-account' ),
+			'tiktok'    => __( 'TikTok', '4wp-account' ),
 		);
 
 		$enabled = array();
@@ -144,7 +144,7 @@ class WooCommerce {
 			wp_enqueue_script(
 				'forwp-auth',
 				FORWP_AUTH_PLUGIN_URL . 'assets/js/auth.js',
-				[ 'jquery' ],
+				array( 'jquery' ),
 				FORWP_AUTH_VERSION,
 				true
 			);
@@ -152,10 +152,10 @@ class WooCommerce {
 			wp_localize_script(
 				'forwp-auth',
 				'forwpAuth',
-				[
+				array(
 					'apiUrl' => rest_url( 'forwp-auth/v1/' ),
-					'nonce'   => wp_create_nonce( 'forwp_auth_nonce' ),
-				]
+					'nonce'  => wp_create_nonce( 'forwp_auth_nonce' ),
+				)
 			);
 		}
 
@@ -164,7 +164,7 @@ class WooCommerce {
 			wp_enqueue_style(
 				'forwp-auth',
 				FORWP_AUTH_PLUGIN_URL . 'assets/css/auth.css',
-				[],
+				array(),
 				FORWP_AUTH_VERSION
 			);
 		}

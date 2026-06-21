@@ -24,18 +24,19 @@ class SettingsPage {
 			return;
 		}
 
-		// Get current tab (before form submission to preserve it)
-		$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'social-networks';
+		// Get current tab (before form submission to preserve it).
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab switch; no state change.
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : 'social-networks';
 
 		// Handle form submission
 		if ( isset( $_POST['forwp_auth_settings'] ) && check_admin_referer( 'forwp_auth_settings', 'forwp_auth_nonce' ) ) {
-			self::save_settings();
-			
+			self::save_settings( wp_unslash( $_POST ) );
+
 			// Redirect to preserve the current tab
 			$redirect_url = add_query_arg(
 				array(
-					'page' => 'forwp-auth',
-					'tab'  => $current_tab,
+					'page'             => 'forwp-account',
+					'tab'              => $current_tab,
 					'settings-updated' => 'true',
 				),
 				admin_url( 'admin.php' )
@@ -45,27 +46,28 @@ class SettingsPage {
 		}
 
 		// Show success message if redirected after save
-		if ( isset( $_GET['settings-updated'] ) && 'true' === $_GET['settings-updated'] ) {
-			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved!', '4wp-auth' ) . '</p></div>';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Redirect flash after save.
+		if ( isset( $_GET['settings-updated'] ) && 'true' === sanitize_text_field( wp_unslash( (string) $_GET['settings-updated'] ) ) ) {
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved!', '4wp-account' ) . '</p></div>';
 		}
 
 		// Define tabs
 		$tabs = array(
-			'social-networks' => __( 'Social Networks', '4wp-auth' ),
-			'general'         => __( 'General Settings', '4wp-auth' ),
+			'social-networks' => __( 'Social Networks', '4wp-account' ),
+			'general'         => __( 'General Settings', '4wp-account' ),
 		);
 
 		?>
 		<div class="wrap">
-			<h1><?php echo esc_html__( '4wp Auth Settings', '4wp-auth' ); ?></h1>
+			<h1><?php echo esc_html__( '4WP Account Settings', '4wp-account' ); ?></h1>
 
-			<nav class="nav-tab-wrapper wp-clearfix" aria-label="<?php esc_attr_e( 'Secondary menu', '4wp-auth' ); ?>">
+			<nav class="nav-tab-wrapper wp-clearfix" aria-label="<?php esc_attr_e( 'Secondary menu', '4wp-account' ); ?>">
 				<?php
 				foreach ( $tabs as $tab_key => $tab_label ) {
 					$active_class = ( $current_tab === $tab_key ) ? ' nav-tab-active' : '';
 					printf(
 						'<a href="%s" class="nav-tab%s" aria-current="%s">%s</a>',
-						esc_url( add_query_arg( array( 'tab' => $tab_key ), admin_url( 'admin.php?page=forwp-auth' ) ) ),
+						esc_url( add_query_arg( array( 'tab' => $tab_key ), admin_url( 'admin.php?page=forwp-account' ) ) ),
 						esc_attr( $active_class ),
 						( $current_tab === $tab_key ? 'page' : 'false' ),
 						esc_html( $tab_label )
@@ -100,10 +102,10 @@ class SettingsPage {
 	 */
 	private static function render_social_networks_tab( $hidden = false ) {
 		$providers = array(
-			'gmail'     => __( 'Gmail', '4wp-auth' ),
-			'facebook'  => __( 'Facebook', '4wp-auth' ),
-			'instagram' => __( 'Instagram', '4wp-auth' ),
-			'tiktok'    => __( 'TikTok', '4wp-auth' ),
+			'gmail'     => __( 'Gmail', '4wp-account' ),
+			'facebook'  => __( 'Facebook', '4wp-account' ),
+			'instagram' => __( 'Instagram', '4wp-account' ),
+			'tiktok'    => __( 'TikTok', '4wp-account' ),
 		);
 
 		if ( $hidden ) {
@@ -141,9 +143,9 @@ class SettingsPage {
 			return;
 		}
 		?>
-		<h2><?php esc_html_e( 'Social Networks Settings', '4wp-auth' ); ?></h2>
+		<h2><?php esc_html_e( 'Social Networks Settings', '4wp-account' ); ?></h2>
 		<p class="description">
-			<?php esc_html_e( 'Select the social networks you want to enable for user authentication.', '4wp-auth' ); ?>
+			<?php esc_html_e( 'Select the social networks you want to enable for user authentication.', '4wp-account' ); ?>
 		</p>
 
 		<table class="form-table">
@@ -166,109 +168,112 @@ class SettingsPage {
 								value="1" 
 								<?php checked( $enabled, '1' ); ?>
 							/>
-							<?php printf( esc_html__( 'Enable %s', '4wp-auth' ), esc_html( $provider_name ) ); ?>
+							<?php
+							/* translators: %s: social network name */
+							printf( esc_html__( 'Enable %s', '4wp-account' ), esc_html( $provider_name ) );
+							?>
 						</label>
 					</td>
 				</tr>
 			<?php endforeach; ?>
 		</table>
 
-		<h2><?php esc_html_e( 'Provider Credentials', '4wp-auth' ); ?></h2>
+		<h2><?php esc_html_e( 'Provider Credentials', '4wp-account' ); ?></h2>
 
 		<!-- Gmail Settings -->
-		<h3><?php esc_html_e( 'Gmail', '4wp-auth' ); ?></h3>
+		<h3><?php esc_html_e( 'Gmail', '4wp-account' ); ?></h3>
 		<table class="form-table">
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_gmail_client_id"><?php esc_html_e( 'Client ID', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_gmail_client_id"><?php esc_html_e( 'Client ID', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="text" id="forwp_auth_gmail_client_id" name="forwp_auth_gmail_client_id" value="<?php echo esc_attr( get_option( 'forwp_auth_gmail_client_id', '' ) ); ?>" class="regular-text" />
 					<p class="description">
-						<?php esc_html_e( 'Get your Client ID from', '4wp-auth' ); ?> 
-						<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Google Cloud Console', '4wp-auth' ); ?></a>
+						<?php esc_html_e( 'Get your Client ID from', '4wp-account' ); ?> 
+						<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Google Cloud Console', '4wp-account' ); ?></a>
 					</p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_gmail_client_secret"><?php esc_html_e( 'Client Secret', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_gmail_client_secret"><?php esc_html_e( 'Client Secret', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="password" id="forwp_auth_gmail_client_secret" name="forwp_auth_gmail_client_secret" value="<?php echo esc_attr( get_option( 'forwp_auth_gmail_client_secret', '' ) ); ?>" class="regular-text" />
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Redirect URI', '4wp-auth' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Redirect URI', '4wp-account' ); ?></th>
 				<td>
 					<code id="redirect-uri-gmail"><?php echo esc_html( home_url( '/wp-json/forwp-auth/v1/callback/gmail' ) ); ?></code>
-					<button type="button" class="button button-small" onclick="navigator.clipboard.writeText(document.getElementById('redirect-uri-gmail').textContent); alert('<?php esc_attr_e( 'Copied!', '4wp-auth' ); ?>');" style="margin-left: 10px;">
-						<?php esc_html_e( 'Copy', '4wp-auth' ); ?>
+					<button type="button" class="button button-small" onclick="navigator.clipboard.writeText(document.getElementById('redirect-uri-gmail').textContent); alert('<?php esc_attr_e( 'Copied!', '4wp-account' ); ?>');" style="margin-left: 10px;">
+						<?php esc_html_e( 'Copy', '4wp-account' ); ?>
 					</button>
 					<p class="description">
-						<strong><?php esc_html_e( 'IMPORTANT:', '4wp-auth' ); ?></strong> 
-						<?php esc_html_e( 'Copy the URL above and add it to Google Cloud Console → Credentials → Authorized redirect URIs. The URL must be EXACTLY the same (including port if applicable).', '4wp-auth' ); ?>
+						<strong><?php esc_html_e( 'IMPORTANT:', '4wp-account' ); ?></strong> 
+						<?php esc_html_e( 'Copy the URL above and add it to Google Cloud Console → Credentials → Authorized redirect URIs. The URL must be EXACTLY the same (including port if applicable).', '4wp-account' ); ?>
 					</p>
 				</td>
 			</tr>
 		</table>
 
 		<!-- Facebook Settings -->
-		<h3><?php esc_html_e( 'Facebook', '4wp-auth' ); ?></h3>
+		<h3><?php esc_html_e( 'Facebook', '4wp-account' ); ?></h3>
 		<table class="form-table">
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_facebook_app_id"><?php esc_html_e( 'App ID', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_facebook_app_id"><?php esc_html_e( 'App ID', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="text" id="forwp_auth_facebook_app_id" name="forwp_auth_facebook_app_id" value="<?php echo esc_attr( get_option( 'forwp_auth_facebook_app_id', '' ) ); ?>" class="regular-text" />
 					<p class="description">
-						<?php esc_html_e( 'Get your App ID from', '4wp-auth' ); ?> 
-						<a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Facebook Developers', '4wp-auth' ); ?></a>
+						<?php esc_html_e( 'Get your App ID from', '4wp-account' ); ?> 
+						<a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Facebook Developers', '4wp-account' ); ?></a>
 					</p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_facebook_app_secret"><?php esc_html_e( 'App Secret', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_facebook_app_secret"><?php esc_html_e( 'App Secret', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="password" id="forwp_auth_facebook_app_secret" name="forwp_auth_facebook_app_secret" value="<?php echo esc_attr( get_option( 'forwp_auth_facebook_app_secret', '' ) ); ?>" class="regular-text" />
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Redirect URI', '4wp-auth' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Redirect URI', '4wp-account' ); ?></th>
 				<td>
 					<code id="redirect-uri-facebook"><?php echo esc_html( home_url( '/wp-json/forwp-auth/v1/callback/facebook' ) ); ?></code>
-					<button type="button" class="button button-small" onclick="navigator.clipboard.writeText(document.getElementById('redirect-uri-facebook').textContent); alert('<?php esc_attr_e( 'Copied!', '4wp-auth' ); ?>');" style="margin-left: 10px;">
-						<?php esc_html_e( 'Copy', '4wp-auth' ); ?>
+					<button type="button" class="button button-small" onclick="navigator.clipboard.writeText(document.getElementById('redirect-uri-facebook').textContent); alert('<?php esc_attr_e( 'Copied!', '4wp-account' ); ?>');" style="margin-left: 10px;">
+						<?php esc_html_e( 'Copy', '4wp-account' ); ?>
 					</button>
 					<p class="description">
-						<strong><?php esc_html_e( 'IMPORTANT:', '4wp-auth' ); ?></strong> 
-						<?php esc_html_e( 'Add this URL to Facebook App → Settings → Basic → Valid OAuth Redirect URIs', '4wp-auth' ); ?>
+						<strong><?php esc_html_e( 'IMPORTANT:', '4wp-account' ); ?></strong> 
+						<?php esc_html_e( 'Add this URL to Facebook App → Settings → Basic → Valid OAuth Redirect URIs', '4wp-account' ); ?>
 					</p>
 				</td>
 			</tr>
 		</table>
 
 		<!-- Instagram Settings -->
-		<h3><?php esc_html_e( 'Instagram', '4wp-auth' ); ?></h3>
+		<h3><?php esc_html_e( 'Instagram', '4wp-account' ); ?></h3>
 		<table class="form-table">
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_instagram_app_id"><?php esc_html_e( 'App ID', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_instagram_app_id"><?php esc_html_e( 'App ID', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="text" id="forwp_auth_instagram_app_id" name="forwp_auth_instagram_app_id" value="<?php echo esc_attr( get_option( 'forwp_auth_instagram_app_id', '' ) ); ?>" class="regular-text" />
 					<p class="description">
-						<?php esc_html_e( 'Instagram uses the same Facebook App. Get your App ID from', '4wp-auth' ); ?> 
-						<a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Facebook Developers', '4wp-auth' ); ?></a>
+						<?php esc_html_e( 'Instagram uses the same Facebook App. Get your App ID from', '4wp-account' ); ?> 
+						<a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Facebook Developers', '4wp-account' ); ?></a>
 					</p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_instagram_app_secret"><?php esc_html_e( 'App Secret', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_instagram_app_secret"><?php esc_html_e( 'App Secret', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="password" id="forwp_auth_instagram_app_secret" name="forwp_auth_instagram_app_secret" value="<?php echo esc_attr( get_option( 'forwp_auth_instagram_app_secret', '' ) ); ?>" class="regular-text" />
@@ -277,23 +282,23 @@ class SettingsPage {
 		</table>
 
 		<!-- TikTok Settings -->
-		<h3><?php esc_html_e( 'TikTok', '4wp-auth' ); ?></h3>
+		<h3><?php esc_html_e( 'TikTok', '4wp-account' ); ?></h3>
 		<table class="form-table">
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_tiktok_client_id"><?php esc_html_e( 'Client ID', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_tiktok_client_id"><?php esc_html_e( 'Client ID', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="text" id="forwp_auth_tiktok_client_id" name="forwp_auth_tiktok_client_id" value="<?php echo esc_attr( get_option( 'forwp_auth_tiktok_client_id', '' ) ); ?>" class="regular-text" />
 					<p class="description">
-						<?php esc_html_e( 'Get your Client ID from', '4wp-auth' ); ?> 
-						<a href="https://developers.tiktok.com/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'TikTok Developers', '4wp-auth' ); ?></a>
+						<?php esc_html_e( 'Get your Client ID from', '4wp-account' ); ?> 
+						<a href="https://developers.tiktok.com/" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'TikTok Developers', '4wp-account' ); ?></a>
 					</p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="forwp_auth_tiktok_client_secret"><?php esc_html_e( 'Client Secret', '4wp-auth' ); ?></label>
+					<label for="forwp_auth_tiktok_client_secret"><?php esc_html_e( 'Client Secret', '4wp-account' ); ?></label>
 				</th>
 				<td>
 					<input type="password" id="forwp_auth_tiktok_client_secret" name="forwp_auth_tiktok_client_secret" value="<?php echo esc_attr( get_option( 'forwp_auth_tiktok_client_secret', '' ) ); ?>" class="regular-text" />
@@ -301,22 +306,22 @@ class SettingsPage {
 			</tr>
 		</table>
 
-		<h2><?php esc_html_e( 'Usage', '4wp-auth' ); ?></h2>
+		<h2><?php esc_html_e( 'Usage', '4wp-account' ); ?></h2>
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Shortcode', '4wp-auth' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Shortcode', '4wp-account' ); ?></th>
 				<td>
 					<code>[forwp_auth_login provider="gmail"]</code><br>
 					<code>[forwp_auth_login provider="facebook"]</code>
-					<p class="description"><?php esc_html_e( 'Add shortcode to any page or in the WordPress editor', '4wp-auth' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Add shortcode to any page or in the WordPress editor', '4wp-account' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php esc_html_e( 'HTML Code', '4wp-auth' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'HTML Code', '4wp-account' ); ?></th>
 				<td>
 					<code>&lt;button class="forwp-auth-btn" data-provider="gmail"&gt;Sign in with Gmail&lt;/button&gt;</code><br>
 					<code>&lt;button class="forwp-auth-btn" data-provider="facebook"&gt;Sign in with Facebook&lt;/button&gt;</code>
-					<p class="description"><?php esc_html_e( 'Or add HTML code directly to the theme template', '4wp-auth' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Or add HTML code directly to the theme template', '4wp-account' ); ?></p>
 				</td>
 			</tr>
 		</table>
@@ -330,9 +335,9 @@ class SettingsPage {
 	 */
 	private static function render_general_tab( $hidden = false ) {
 		$hide_toolbar_subscribers = get_option( 'forwp_auth_hide_toolbar_subscribers', '0' );
-		$subscriber_redirect_url = get_option( 'forwp_auth_subscriber_redirect_url', '' );
-		$woocommerce_integration = get_option( 'forwp_auth_woocommerce_integration', '0' );
-		$is_woocommerce_active = class_exists( 'WooCommerce' );
+		$subscriber_redirect_url  = get_option( 'forwp_auth_subscriber_redirect_url', '' );
+		$woocommerce_integration  = get_option( 'forwp_auth_woocommerce_integration', '0' );
+		$is_woocommerce_active    = class_exists( 'WooCommerce' );
 
 		if ( $hidden ) {
 			// Render all fields as hidden to preserve data when saving from other tab
@@ -346,13 +351,13 @@ class SettingsPage {
 			return;
 		}
 		?>
-		<h2><?php esc_html_e( 'General Settings', '4wp-auth' ); ?></h2>
+		<h2><?php esc_html_e( 'General Settings', '4wp-account' ); ?></h2>
 
 		<table class="form-table">
 			<tr>
 				<th scope="row">
 					<label for="forwp_auth_hide_toolbar_subscribers">
-						<?php esc_html_e( 'WordPress Toolbar', '4wp-auth' ); ?>
+						<?php esc_html_e( 'WordPress Toolbar', '4wp-account' ); ?>
 					</label>
 				</th>
 				<td>
@@ -364,17 +369,17 @@ class SettingsPage {
 							value="1" 
 							<?php checked( $hide_toolbar_subscribers, '1' ); ?>
 						/>
-						<?php esc_html_e( 'Hide WordPress toolbar for subscribers', '4wp-auth' ); ?>
+						<?php esc_html_e( 'Hide WordPress toolbar for subscribers', '4wp-account' ); ?>
 					</label>
 					<p class="description">
-						<?php esc_html_e( 'If enabled, users with the "Subscriber" role will not see the WordPress admin bar at the top of the site.', '4wp-auth' ); ?>
+						<?php esc_html_e( 'If enabled, users with the "Subscriber" role will not see the WordPress admin bar at the top of the site.', '4wp-account' ); ?>
 					</p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
 					<label for="forwp_auth_subscriber_redirect_url">
-						<?php esc_html_e( 'Subscriber Redirect URL', '4wp-auth' ); ?>
+						<?php esc_html_e( 'Subscriber Redirect URL', '4wp-account' ); ?>
 					</label>
 				</th>
 				<td>
@@ -387,7 +392,7 @@ class SettingsPage {
 						placeholder="/my-account"
 					/>
 					<p class="description">
-						<?php esc_html_e( 'Redirect subscribers from /wp-admin/ to this URL. You can use a relative path (e.g., /my-account) or full URL (e.g., https://example.com/my-account). Leave empty to disable redirect.', '4wp-auth' ); ?>
+						<?php esc_html_e( 'Redirect subscribers from /wp-admin/ to this URL. You can use a relative path (e.g., /my-account) or full URL (e.g., https://example.com/my-account). Leave empty to disable redirect.', '4wp-account' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -395,7 +400,7 @@ class SettingsPage {
 			<tr>
 				<th scope="row">
 					<label for="forwp_auth_woocommerce_integration">
-						<?php esc_html_e( 'WooCommerce Integration', '4wp-auth' ); ?>
+						<?php esc_html_e( 'WooCommerce Integration', '4wp-account' ); ?>
 					</label>
 				</th>
 				<td>
@@ -407,21 +412,21 @@ class SettingsPage {
 							value="1" 
 							<?php checked( $woocommerce_integration, '1' ); ?>
 						/>
-						<?php esc_html_e( 'Enable WooCommerce integration', '4wp-auth' ); ?>
+						<?php esc_html_e( 'Enable WooCommerce integration', '4wp-account' ); ?>
 					</label>
 					<p class="description">
-						<?php esc_html_e( 'If enabled, social login buttons will be displayed on WooCommerce login and registration forms (My Account page).', '4wp-auth' ); ?>
+						<?php esc_html_e( 'If enabled, social login buttons will be displayed on WooCommerce login and registration forms (My Account page).', '4wp-account' ); ?>
 					</p>
 				</td>
 			</tr>
 			<?php else : ?>
 			<tr>
 				<th scope="row">
-					<?php esc_html_e( 'WooCommerce Integration', '4wp-auth' ); ?>
+					<?php esc_html_e( 'WooCommerce Integration', '4wp-account' ); ?>
 				</th>
 				<td>
 					<p class="description" style="color: #646970;">
-						<?php esc_html_e( 'WooCommerce is not installed or activated. Install and activate WooCommerce to enable integration options.', '4wp-auth' ); ?>
+						<?php esc_html_e( 'WooCommerce is not installed or activated. Install and activate WooCommerce to enable integration options.', '4wp-account' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -431,62 +436,51 @@ class SettingsPage {
 	}
 
 	/**
-	 * Save settings
+	 * Save settings from verified POST payload.
+	 *
+	 * @param array<string, mixed> $posted Unslashed POST data (nonce verified in render()).
 	 */
-	private static function save_settings() {
-		// Save provider enabled settings
+	private static function save_settings( array $posted ): void {
 		$providers = array( 'gmail', 'facebook', 'instagram', 'tiktok' );
 		foreach ( $providers as $provider ) {
 			$option_name = 'forwp_auth_provider_enabled_' . $provider;
-			$value = isset( $_POST[ $option_name ] ) ? '1' : '0';
+			$value       = isset( $posted[ $option_name ] ) ? '1' : '0';
 			update_option( $option_name, $value );
 		}
 
-		// Gmail settings
-		if ( isset( $_POST['forwp_auth_gmail_client_id'] ) ) {
-			update_option( 'forwp_auth_gmail_client_id', sanitize_text_field( $_POST['forwp_auth_gmail_client_id'] ) );
-		}
-		if ( isset( $_POST['forwp_auth_gmail_client_secret'] ) ) {
-			update_option( 'forwp_auth_gmail_client_secret', sanitize_text_field( $_POST['forwp_auth_gmail_client_secret'] ) );
-		}
+		self::update_post_text_option( 'forwp_auth_gmail_client_id', $posted );
+		self::update_post_text_option( 'forwp_auth_gmail_client_secret', $posted );
+		self::update_post_text_option( 'forwp_auth_facebook_app_id', $posted );
+		self::update_post_text_option( 'forwp_auth_facebook_app_secret', $posted );
+		self::update_post_text_option( 'forwp_auth_instagram_app_id', $posted );
+		self::update_post_text_option( 'forwp_auth_instagram_app_secret', $posted );
+		self::update_post_text_option( 'forwp_auth_tiktok_client_id', $posted );
+		self::update_post_text_option( 'forwp_auth_tiktok_client_secret', $posted );
 
-		// Facebook settings
-		if ( isset( $_POST['forwp_auth_facebook_app_id'] ) ) {
-			update_option( 'forwp_auth_facebook_app_id', sanitize_text_field( $_POST['forwp_auth_facebook_app_id'] ) );
-		}
-		if ( isset( $_POST['forwp_auth_facebook_app_secret'] ) ) {
-			update_option( 'forwp_auth_facebook_app_secret', sanitize_text_field( $_POST['forwp_auth_facebook_app_secret'] ) );
-		}
-
-		// Instagram settings
-		if ( isset( $_POST['forwp_auth_instagram_app_id'] ) ) {
-			update_option( 'forwp_auth_instagram_app_id', sanitize_text_field( $_POST['forwp_auth_instagram_app_id'] ) );
-		}
-		if ( isset( $_POST['forwp_auth_instagram_app_secret'] ) ) {
-			update_option( 'forwp_auth_instagram_app_secret', sanitize_text_field( $_POST['forwp_auth_instagram_app_secret'] ) );
-		}
-
-		// TikTok settings
-		if ( isset( $_POST['forwp_auth_tiktok_client_id'] ) ) {
-			update_option( 'forwp_auth_tiktok_client_id', sanitize_text_field( $_POST['forwp_auth_tiktok_client_id'] ) );
-		}
-		if ( isset( $_POST['forwp_auth_tiktok_client_secret'] ) ) {
-			update_option( 'forwp_auth_tiktok_client_secret', sanitize_text_field( $_POST['forwp_auth_tiktok_client_secret'] ) );
-		}
-
-		// General settings
-		$hide_toolbar_subscribers = isset( $_POST['forwp_auth_hide_toolbar_subscribers'] ) ? '1' : '0';
+		$hide_toolbar_subscribers = isset( $posted['forwp_auth_hide_toolbar_subscribers'] ) ? '1' : '0';
 		update_option( 'forwp_auth_hide_toolbar_subscribers', $hide_toolbar_subscribers );
 
-		if ( isset( $_POST['forwp_auth_subscriber_redirect_url'] ) ) {
-			$redirect_url = sanitize_text_field( $_POST['forwp_auth_subscriber_redirect_url'] );
-			// Allow relative paths or full URLs
-			update_option( 'forwp_auth_subscriber_redirect_url', $redirect_url );
+		self::update_post_text_option( 'forwp_auth_subscriber_redirect_url', $posted );
+
+		$woocommerce_integration = isset( $posted['forwp_auth_woocommerce_integration'] ) ? '1' : '0';
+		update_option( 'forwp_auth_woocommerce_integration', $woocommerce_integration );
+	}
+
+	/**
+	 * Update an option from a POST text field when present.
+	 *
+	 * @param string               $option_name Option key.
+	 * @param array<string, mixed> $posted      POST payload.
+	 */
+	private static function update_post_text_option( string $option_name, array $posted ): void {
+		if ( ! isset( $posted[ $option_name ] ) ) {
+			return;
 		}
 
-		// WooCommerce integration
-		$woocommerce_integration = isset( $_POST['forwp_auth_woocommerce_integration'] ) ? '1' : '0';
-		update_option( 'forwp_auth_woocommerce_integration', $woocommerce_integration );
+		update_option(
+			$option_name,
+			sanitize_text_field( (string) $posted[ $option_name ] )
+		);
 	}
 }
 

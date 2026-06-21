@@ -56,7 +56,7 @@ abstract class BaseProvider {
 	 *
 	 * @var array
 	 */
-	protected $scopes = [];
+	protected $scopes = array();
 
 	/**
 	 * Check if provider is enabled
@@ -98,7 +98,7 @@ abstract class BaseProvider {
 		$email = $user_data['email'] ?? '';
 
 		if ( empty( $email ) ) {
-			return new \WP_Error( 'no_email', __( 'Email is required', '4wp-auth' ) );
+			return new \WP_Error( 'no_email', __( 'Email is required', '4wp-account' ) );
 		}
 
 		$user = get_user_by( 'email', $email );
@@ -144,17 +144,26 @@ abstract class BaseProvider {
 	 * @return string
 	 */
 	protected function generate_username( $user_data ) {
-		$base = $user_data['username'] ?? $user_data['name'] ?? $user_data['email'];
-		$base = sanitize_user( $base, true );
+		$base     = $user_data['username'] ?? $user_data['name'] ?? $user_data['email'];
+		$base     = sanitize_user( $base, true );
 		$username = $base;
-		$counter = 1;
+		$counter  = 1;
 
 		while ( username_exists( $username ) ) {
 			$username = $base . $counter;
-			$counter++;
+			++$counter;
 		}
 
 		return $username;
+	}
+
+	/**
+	 * Whether the provider toggle is enabled in settings.
+	 *
+	 * @return bool
+	 */
+	protected function is_provider_toggled_on() {
+		return get_option( 'forwp_auth_provider_enabled_' . $this->provider_id, '0' ) === '1';
 	}
 
 	/**
@@ -168,8 +177,3 @@ abstract class BaseProvider {
 		return get_option( "forwp_auth_{$this->provider_id}_{$key}", $default );
 	}
 }
-
-
-
-
-

@@ -47,7 +47,7 @@ class Extension {
 	 */
 	private function init() {
 		// Initialize modules
-		add_action( 'init', [ $this, 'load_modules' ], 1 );
+		add_action( 'init', array( $this, 'load_modules' ), 1 );
 	}
 
 	/**
@@ -85,4 +85,3 @@ class Extension {
 		}
 	}
 }
-
