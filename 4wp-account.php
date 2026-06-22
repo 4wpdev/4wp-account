@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       4WP Account
  * Plugin URI:        https://github.com/4wpdev/4wp-account
- * Description:       User account hub — authentication providers, account pages, and menu blocks for WordPress.
- * Version:           1.0.2
+ * Description:       User account hub — Google/GitHub social login, account page, and Gutenberg blocks.
+ * Version:           1.0.3
  * Requires at least: 6.4
  * Tested up to:      7.0
  * Requires PHP:      8.0
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FORWP_ACCOUNT_VERSION', '1.0.2' );
+define( 'FORWP_ACCOUNT_VERSION', '1.0.3' );
 define( 'FORWP_ACCOUNT_PLUGIN_FILE', __FILE__ );
 define( 'FORWP_ACCOUNT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'FORWP_ACCOUNT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

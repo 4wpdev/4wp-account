@@ -75,10 +75,11 @@ abstract class BaseProvider {
 	/**
 	 * Handle OAuth callback
 	 *
-	 * @param string $code Authorization code.
-	 * @return array|WP_Error User data or error.
+	 * @param string $code  Authorization code.
+	 * @param string $state OAuth state (verified in Routes before this runs).
+	 * @return array|\WP_Error User data or error.
 	 */
-	abstract public function handle_callback( $code );
+	abstract public function handle_callback( $code, $state = '' );
 
 	/**
 	 * Get user info from provider
@@ -155,6 +156,22 @@ abstract class BaseProvider {
 		}
 
 		return $username;
+	}
+
+	/**
+	 * Log in a WordPress user after successful OAuth (fires wp_login for security plugins).
+	 *
+	 * @param int $user_id User ID.
+	 */
+	protected function login_user( int $user_id ): void {
+		wp_clear_auth_cookie();
+		wp_set_current_user( $user_id );
+		wp_set_auth_cookie( $user_id, true );
+
+		$user = get_user_by( 'id', $user_id );
+		if ( $user instanceof \WP_User ) {
+			do_action( 'wp_login', $user->user_login, $user );
+		}
 	}
 
 	/**

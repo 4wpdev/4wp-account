@@ -7,6 +7,8 @@
 
 namespace ForWP\Account\Providers;
 
+use ForWP\Account\Auth\OAuthState;
+use ForWP\Account\Auth\OAuthUrls;
 use ForWP\Account\Auth\ProviderSettings;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -63,8 +65,7 @@ class Github extends BaseProvider {
 	 * @return string
 	 */
 	public function get_authorization_url() {
-		$state = wp_generate_password( 32, false );
-		set_transient( 'forwp_account_github_state_' . $state, $state, 600 );
+		$state = OAuthState::create( $this->provider_id );
 
 		$params = array(
 			'client_id'    => $this->client_id,
@@ -82,13 +83,7 @@ class Github extends BaseProvider {
 	 * @return array|\WP_Error
 	 */
 	public function handle_callback( $code, $state = '' ) {
-		if ( ! empty( $state ) ) {
-			$stored_state = get_transient( 'forwp_account_github_state_' . $state );
-			if ( $stored_state !== $state ) {
-				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-account' ) );
-			}
-			delete_transient( 'forwp_account_github_state_' . $state );
-		}
+		// State verified in Routes::handle_callback() before this runs.
 
 		$token_response = $this->exchange_code_for_token( $code );
 
@@ -132,8 +127,7 @@ class Github extends BaseProvider {
 			return $user_id;
 		}
 
-		wp_set_current_user( $user_id );
-		wp_set_auth_cookie( $user_id );
+		$this->login_user( (int) $user_id );
 
 		return array(
 			'user_id'   => $user_id,
@@ -265,6 +259,6 @@ class Github extends BaseProvider {
 	 * @return string
 	 */
 	protected function get_redirect_uri() {
-		return home_url( '/wp-json/forwp-account/v1/callback/github' );
+		return OAuthUrls::callback_url( $this->provider_id );
 	}
 }

@@ -1,15 +1,16 @@
 <?php
 /**
- * @package ForWP\Auth
+ * @package ForWP\Account
  */
 
 declare( strict_types=1 );
 
-namespace ForWP\Auth\Tests\Unit;
+namespace ForWP\Account\Tests\Unit;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 use PHPUnit\Framework\TestCase;
+use ForWP\Account\Shortcodes;
 
 /**
  * Shortcode registration smoke tests.
@@ -27,12 +28,14 @@ class ShortcodesTest extends TestCase {
 		Functions\when( 'esc_html' )->returnArg( 1 );
 		Functions\when( 'esc_attr' )->returnArg( 1 );
 		Functions\when( 'sanitize_text_field' )->returnArg( 1 );
+		Functions\when( 'sanitize_key' )->returnArg( 1 );
 		Functions\when( 'is_user_logged_in' )->justReturn( false );
 		Functions\when( 'shortcode_atts' )->alias(
 			static function ( $pairs, $atts ) {
 				return array_merge( $pairs, is_array( $atts ) ? $atts : array() );
 			}
 		);
+		Functions\when( 'get_option' )->justReturn( '1' );
 	}
 
 	/**
@@ -47,14 +50,14 @@ class ShortcodesTest extends TestCase {
 	 * @return void
 	 */
 	public function test_login_shortcode_renders_button(): void {
-		$html = \ForWP\Auth\Shortcodes::render_login_button(
+		$html = Shortcodes::render_login_button(
 			array(
 				'provider' => 'gmail',
-				'text'     => 'Sign in with Gmail',
+				'text'     => 'Sign in with Google',
 			)
 		);
 
-		$this->assertStringContainsString( 'forwp-auth-btn', $html );
+		$this->assertStringContainsString( 'forwp-account-signin-btn', $html );
 		$this->assertStringContainsString( 'data-provider="gmail"', $html );
 	}
 }

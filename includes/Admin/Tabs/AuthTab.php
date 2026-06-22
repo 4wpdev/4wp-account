@@ -7,6 +7,8 @@
 
 namespace ForWP\Account\Admin\Tabs;
 
+use ForWP\Account\Auth\OAuthUrls;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -206,7 +208,7 @@ class AuthTab {
 	 * @param string $provider Provider slug (gmail, github, …).
 	 */
 	public static function get_callback_url( string $provider ): string {
-		return home_url( '/wp-json/forwp-account/v1/callback/' . sanitize_key( $provider ) );
+		return OAuthUrls::callback_url( $provider );
 	}
 
 	/**

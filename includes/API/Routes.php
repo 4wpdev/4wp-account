@@ -7,6 +7,8 @@
 
 namespace ForWP\Account\API;
 
+use ForWP\Account\Auth\OAuthState;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -66,7 +68,7 @@ class Routes {
 			]
 		);
 
-		// OAuth callbacks
+		// OAuth callbacks — public redirect endpoint; CSRF mitigated via required state token.
 		register_rest_route(
 			$namespace,
 			'/callback/(?P<provider>[a-zA-Z0-9-]+)',
@@ -134,6 +136,11 @@ class Routes {
 
 		if ( ! $provider ) {
 			return $this->redirect_with_error( __( 'Invalid provider', '4wp-account' ) );
+		}
+
+		$state_check = OAuthState::verify( $provider_id, is_string( $state ) ? $state : '' );
+		if ( is_wp_error( $state_check ) ) {
+			return $this->redirect_with_error( $state_check->get_error_message() );
 		}
 
 		$result = $provider->handle_callback( $code, $state );
