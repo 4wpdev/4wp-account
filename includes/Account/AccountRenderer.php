@@ -258,8 +258,9 @@ class AccountRenderer {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$message = sanitize_text_field( wp_unslash( urldecode( (string) $_GET['forwp_account_error'] ) ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth error flash from redirect URL.
+		$raw_error = isset( $_GET['forwp_account_error'] ) ? wp_unslash( (string) $_GET['forwp_account_error'] ) : '';
+		$message   = sanitize_text_field( urldecode( $raw_error ) );
 		if ( $message === '' ) {
 			return;
 		}
@@ -342,12 +343,12 @@ class AccountRenderer {
 	 * Remember ?redirect_to= on the account page until OAuth completes.
 	 */
 	private static function persist_redirect_target_from_request(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public redirect_to query on account page.
 		if ( ! isset( $_GET['redirect_to'] ) ) {
 			return;
 		}
 
-		$redirect_to = wp_validate_redirect( wp_unslash( $_GET['redirect_to'] ), '' );
+		$redirect_to = wp_validate_redirect( sanitize_text_field( wp_unslash( (string) $_GET['redirect_to'] ) ), '' );
 		if ( '' === $redirect_to ) {
 			return;
 		}

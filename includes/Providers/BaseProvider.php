@@ -170,6 +170,7 @@ abstract class BaseProvider {
 
 		$user = get_user_by( 'id', $user_id );
 		if ( $user instanceof \WP_User ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core action hook.
 			do_action( 'wp_login', $user->user_login, $user );
 		}
 	}

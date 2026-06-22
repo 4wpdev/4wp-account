@@ -49,8 +49,7 @@ class SettingsPage {
 
 		check_admin_referer( 'forwp_account_settings', 'forwp_account_nonce' );
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current_tab = self::sanitize_tab( (string) ( $_GET['tab'] ?? self::TAB_AUTH ) );
+		$current_tab = self::get_request_tab();
 
 		self::save_settings( $current_tab, wp_unslash( $_POST ) );
 
@@ -89,6 +88,32 @@ class SettingsPage {
 	}
 
 	/**
+	 * Active admin tab from the query string (read-only navigation).
+	 */
+	private static function get_request_tab(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab switch; no state change.
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : self::TAB_AUTH;
+
+		return self::sanitize_tab( $tab );
+	}
+
+	/**
+	 * Active Settings sub-section from the query string.
+	 */
+	private static function get_request_section( string $default ): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only section switch.
+		return isset( $_GET['section'] ) ? sanitize_key( wp_unslash( (string) $_GET['section'] ) ) : $default;
+	}
+
+	/**
+	 * Whether the PRG flash flag is present after a successful save.
+	 */
+	private static function is_settings_updated_flash(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Redirect flash after PRG save.
+		return isset( $_GET['settings-updated'] ) && 'true' === sanitize_text_field( wp_unslash( (string) $_GET['settings-updated'] ) );
+	}
+
+	/**
 	 * Render admin page.
 	 */
 	public static function render(): void {
@@ -96,10 +121,9 @@ class SettingsPage {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current_tab = self::sanitize_tab( (string) ( $_GET['tab'] ?? self::TAB_AUTH ) );
+		$current_tab = self::get_request_tab();
 
-		if ( isset( $_GET['settings-updated'] ) && 'true' === $_GET['settings-updated'] ) {
+		if ( self::is_settings_updated_flash() ) {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', '4wp-account' ) . '</p></div>';
 		}
 
@@ -125,8 +149,7 @@ class SettingsPage {
 				if ( self::TAB_FORMS === $current_tab ) {
 					FormsTab::render();
 				} elseif ( self::TAB_SETTINGS === $current_tab ) {
-					// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					$section = sanitize_key( (string) ( $_GET['section'] ?? SettingsTab::SUB_PAGES ) );
+					$section = self::get_request_section( SettingsTab::SUB_PAGES );
 					SettingsTab::render( $section );
 				} else {
 					AuthTab::render();

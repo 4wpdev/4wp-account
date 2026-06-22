@@ -45,6 +45,7 @@ class Migrations {
 
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$legacy_options = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s",
@@ -72,8 +73,10 @@ class Migrations {
 		$new_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $new_table ) );
 
 		if ( $legacy_exists === $legacy_table && $new_exists !== $new_table ) {
+			$sql = $wpdb->prepare( 'RENAME TABLE %i TO %i', $legacy_table, $new_table );
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-			$wpdb->query( "RENAME TABLE `{$legacy_table}` TO `{$new_table}`" );
+			$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql from prepare() above.
 		}
 
 		$legacy_meta_keys = array(

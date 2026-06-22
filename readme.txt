@@ -4,7 +4,7 @@ Tags: social login, oauth, google, github, account
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,7 +76,7 @@ This plugin connects to third-party OAuth providers when a visitor starts social
 
 == Frequently Asked Questions ==
 
-= Which providers work in 1.0.3? =
+= Which providers work in 1.0.4? =
 
 **Google** and **GitHub** when enabled and configured. **Facebook** and **TikTok** are shown as *coming soon* in admin and cannot be used for login.
 
@@ -96,6 +96,10 @@ Yes. On first social login, a subscriber account is created from the provider em
 
 == Changelog ==
 
+= 1.0.4 =
+* Remove unused `register_setting()` calls (automated Plugin Check).
+* Plugin Check warnings: input sanitization, migration SQL `%i`, distignore moved to docs.
+
 = 1.0.3 =
 * Review fixes: required OAuth `state` validation, `rest_url()` for callback URLs, readme aligned with active providers.
 * Account blocks and GitHub provider (from ongoing development).
@@ -108,6 +112,9 @@ Yes. On first social login, a subscriber account is created from the provider em
 * Gmail OAuth, shortcodes, WooCommerce integration.
 
 == Upgrade Notice ==
+
+= 1.0.4 =
+Automated scan and Plugin Check fixes — includes T1 review items from 1.0.3.
 
 = 1.0.3 =
 Review resubmit — OAuth state required on callback; use Redirect URIs from Auth settings after update.

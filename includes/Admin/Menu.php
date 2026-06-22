@@ -45,7 +45,6 @@ class Menu {
 		if ( is_admin() ) {
 			SettingsPage::init();
 			add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-			add_action( 'admin_init', array( $this, 'register_settings' ) );
 			add_action( 'admin_init', array( $this, 'redirect_subscribers_from_admin' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		}
@@ -151,7 +150,8 @@ class Menu {
 				$redirect_url = home_url( $redirect_url );
 			}
 
-			$current_url         = home_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+			$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+			$current_url = home_url( $request_uri );
 			$redirect_url_parsed = wp_parse_url( $redirect_url );
 			$current_url_parsed  = wp_parse_url( $current_url );
 
@@ -177,30 +177,5 @@ class Menu {
 			'dashicons-id',
 			31
 		);
-	}
-
-	/**
-	 * Register settings
-	 */
-	public function register_settings() {
-		$group = SettingsPage::SETTINGS_GROUP;
-
-		register_setting( $group, 'forwp_account_page_id', array( 'type' => 'integer', 'default' => 0 ) );
-		register_setting( $group, 'forwp_account_header_menu_sections', array( 'type' => 'array', 'default' => array() ) );
-		register_setting( $group, 'forwp_account_header_menu_custom_links', array( 'type' => 'array', 'default' => array() ) );
-		register_setting( $group, 'forwp_account_page_menu_sections', array( 'type' => 'array', 'default' => array() ) );
-		register_setting( $group, 'forwp_account_page_menu_custom_links', array( 'type' => 'array', 'default' => array() ) );
-
-		register_setting( $group, 'forwp_account_provider_enabled_gmail' );
-		register_setting( $group, 'forwp_account_provider_enabled_facebook' );
-		register_setting( $group, 'forwp_account_provider_enabled_github' );
-		register_setting( $group, 'forwp_account_provider_enabled_tiktok' );
-		register_setting( $group, 'forwp_account_gmail_client_id' );
-		register_setting( $group, 'forwp_account_gmail_client_secret' );
-		register_setting( $group, 'forwp_account_github_client_id' );
-		register_setting( $group, 'forwp_account_github_client_secret' );
-		register_setting( $group, 'forwp_account_hide_toolbar_subscribers' );
-		register_setting( $group, 'forwp_account_subscriber_redirect_url' );
-		register_setting( $group, 'forwp_account_woocommerce_integration' );
 	}
 }

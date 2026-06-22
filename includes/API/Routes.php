@@ -162,11 +162,16 @@ class Routes {
 	 * @return string
 	 */
 	private static function resolve_post_login_redirect( string $default_url ): string {
-		if ( empty( $_COOKIE['forwp_account_redirect_to'] ) ) {
+		if ( ! isset( $_COOKIE['forwp_account_redirect_to'] ) ) {
 			return $default_url;
 		}
 
-		$redirect_to = wp_validate_redirect( rawurldecode( wp_unslash( $_COOKIE['forwp_account_redirect_to'] ) ), '' );
+		$cookie_value = sanitize_text_field( wp_unslash( (string) $_COOKIE['forwp_account_redirect_to'] ) );
+		if ( $cookie_value === '' ) {
+			return $default_url;
+		}
+
+		$redirect_to = wp_validate_redirect( rawurldecode( $cookie_value ), '' );
 
 		$path   = defined( 'COOKIEPATH' ) ? COOKIEPATH : '/';
 		$domain = defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '';
