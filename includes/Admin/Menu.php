@@ -73,10 +73,23 @@ class Menu {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$section = sanitize_key( (string) ( $_GET['section'] ?? '' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$tab = sanitize_key( (string) ( $_GET['tab'] ?? SettingsPage::TAB_AUTH ) );
+
 		if ( 'account-menu' === $section ) {
 			wp_enqueue_script(
 				'forwp-account-admin-menu',
 				FORWP_ACCOUNT_PLUGIN_URL . 'assets/js/admin-account-menu.js',
+				array(),
+				FORWP_ACCOUNT_VERSION,
+				true
+			);
+		}
+
+		if ( SettingsPage::TAB_AUTH === $tab ) {
+			wp_enqueue_script(
+				'forwp-account-admin-auth',
+				FORWP_ACCOUNT_PLUGIN_URL . 'assets/js/admin-auth.js',
 				array(),
 				FORWP_ACCOUNT_VERSION,
 				true
