@@ -2,10 +2,10 @@
 /**
  * Admin Menu
  *
- * @package ForWP\Auth\Admin
+ * @package ForWP\Account\Admin
  */
 
-namespace ForWP\Auth\Admin;
+namespace ForWP\Account\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,15 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Menu {
 
 	/**
-	 * Plugin instance
-	 *
-	 * @var Menu
+	 * @var Menu|null
 	 */
 	private static $instance = null;
 
 	/**
-	 * Get plugin instance
-	 *
 	 * @return Menu
 	 */
 	public static function get_instance() {
@@ -46,37 +42,62 @@ class Menu {
 	 * Initialize
 	 */
 	private function init() {
-		// Admin-only hooks
 		if ( is_admin() ) {
+			SettingsPage::init();
 			add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
+			add_action( 'admin_init', array( $this, 'register_settings' ) );
 			add_action( 'admin_init', array( $this, 'redirect_subscribers_from_admin' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		}
 
-		// Hide toolbar for subscribers if enabled (works on frontend and admin)
 		add_filter( 'show_admin_bar', array( $this, 'hide_toolbar_for_subscribers' ), 999 );
 	}
 
 	/**
-	 * Hide toolbar for subscribers
-	 *
+	 * @param string $hook_suffix Admin hook.
+	 */
+	public function enqueue_admin_assets( string $hook_suffix ): void {
+		unset( $hook_suffix );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || SettingsPage::PAGE_SLUG !== sanitize_text_field( wp_unslash( $_GET['page'] ) ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'forwp-account-admin',
+			FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/admin.css',
+			array(),
+			FORWP_ACCOUNT_VERSION
+		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$section = sanitize_key( (string) ( $_GET['section'] ?? '' ) );
+		if ( 'account-menu' === $section ) {
+			wp_enqueue_script(
+				'forwp-account-admin-menu',
+				FORWP_ACCOUNT_PLUGIN_URL . 'assets/js/admin-account-menu.js',
+				array(),
+				FORWP_ACCOUNT_VERSION,
+				true
+			);
+		}
+	}
+
+	/**
 	 * @param bool $show Whether to show the toolbar.
-	 * @return bool
 	 */
 	public function hide_toolbar_for_subscribers( $show ) {
-		// Only hide if the option is enabled
-		if ( get_option( 'forwp_auth_hide_toolbar_subscribers', '0' ) !== '1' ) {
+		if ( get_option( 'forwp_account_hide_toolbar_subscribers', '0' ) !== '1' ) {
 			return $show;
 		}
 
-		// Check if user is logged in
 		if ( ! is_user_logged_in() ) {
 			return $show;
 		}
 
-		// Get current user
 		$user = wp_get_current_user();
 
-		// Hide toolbar for users with subscriber role only
 		if ( ! empty( $user->roles ) && in_array( 'subscriber', $user->roles, true ) && ! current_user_can( 'edit_posts' ) ) {
 			return false;
 		}
@@ -88,53 +109,43 @@ class Menu {
 	 * Redirect subscribers from admin area
 	 */
 	public function redirect_subscribers_from_admin() {
-		// Check if user is logged in
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
 
-		// Get redirect URL from settings
-		$redirect_url = get_option( 'forwp_auth_subscriber_redirect_url', '' );
+		$redirect_url = get_option( 'forwp_account_subscriber_redirect_url', '' );
+		if ( empty( $redirect_url ) ) {
+			$redirect_url = \ForWP\Account\Account\AccountMenu::get_account_page_url();
+		}
+
 		if ( empty( $redirect_url ) ) {
 			return;
 		}
 
-		// Skip redirect for AJAX requests
 		if ( wp_doing_ajax() ) {
 			return;
 		}
 
-		// Skip redirect for admin-ajax.php and admin-post.php
 		global $pagenow;
 		if ( in_array( $pagenow, array( 'admin-ajax.php', 'admin-post.php' ), true ) ) {
 			return;
 		}
 
-		// Get current user
 		$user = wp_get_current_user();
 
-		// Check if user is subscriber and can't edit posts
 		if ( ! empty( $user->roles ) && in_array( 'subscriber', $user->roles, true ) && ! current_user_can( 'edit_posts' ) ) {
-			// Convert relative URL to absolute if needed
-			if ( ! empty( $redirect_url ) && strpos( $redirect_url, 'http' ) !== 0 ) {
-				// It's a relative path, prepend home_url
+			if ( strpos( $redirect_url, 'http' ) !== 0 ) {
 				$redirect_url = home_url( $redirect_url );
 			}
 
-			// Skip redirect if already on the redirect URL.
-			$request_uri         = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-			$current_url         = home_url( $request_uri );
+			$current_url         = home_url( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
 			$redirect_url_parsed = wp_parse_url( $redirect_url );
 			$current_url_parsed  = wp_parse_url( $current_url );
 
-			// Compare paths to avoid redirect loops
-			if ( ! empty( $redirect_url_parsed['path'] ) && ! empty( $current_url_parsed['path'] ) ) {
-				if ( $redirect_url_parsed['path'] === $current_url_parsed['path'] ) {
-					return;
-				}
+			if ( ! empty( $redirect_url_parsed['path'] ) && ! empty( $current_url_parsed['path'] ) && $redirect_url_parsed['path'] === $current_url_parsed['path'] ) {
+				return;
 			}
 
-			// Redirect to custom URL
 			wp_safe_redirect( $redirect_url );
 			exit;
 		}
@@ -148,19 +159,35 @@ class Menu {
 			__( '4WP Account', '4wp-account' ),
 			__( '4WP Account', '4wp-account' ),
 			'manage_options',
-			'forwp-account',
+			SettingsPage::PAGE_SLUG,
 			array( SettingsPage::class, 'render' ),
-			'dashicons-groups',
-			30
+			'dashicons-id',
+			31
 		);
+	}
 
-		add_submenu_page(
-			'forwp-account',
-			__( 'Settings', '4wp-account' ),
-			__( 'Settings', '4wp-account' ),
-			'manage_options',
-			'forwp-account',
-			array( SettingsPage::class, 'render' )
-		);
+	/**
+	 * Register settings
+	 */
+	public function register_settings() {
+		$group = SettingsPage::SETTINGS_GROUP;
+
+		register_setting( $group, 'forwp_account_page_id', array( 'type' => 'integer', 'default' => 0 ) );
+		register_setting( $group, 'forwp_account_header_menu_sections', array( 'type' => 'array', 'default' => array() ) );
+		register_setting( $group, 'forwp_account_header_menu_custom_links', array( 'type' => 'array', 'default' => array() ) );
+		register_setting( $group, 'forwp_account_page_menu_sections', array( 'type' => 'array', 'default' => array() ) );
+		register_setting( $group, 'forwp_account_page_menu_custom_links', array( 'type' => 'array', 'default' => array() ) );
+
+		register_setting( $group, 'forwp_account_provider_enabled_gmail' );
+		register_setting( $group, 'forwp_account_provider_enabled_facebook' );
+		register_setting( $group, 'forwp_account_provider_enabled_github' );
+		register_setting( $group, 'forwp_account_provider_enabled_tiktok' );
+		register_setting( $group, 'forwp_account_gmail_client_id' );
+		register_setting( $group, 'forwp_account_gmail_client_secret' );
+		register_setting( $group, 'forwp_account_github_client_id' );
+		register_setting( $group, 'forwp_account_github_client_secret' );
+		register_setting( $group, 'forwp_account_hide_toolbar_subscribers' );
+		register_setting( $group, 'forwp_account_subscriber_redirect_url' );
+		register_setting( $group, 'forwp_account_woocommerce_integration' );
 	}
 }

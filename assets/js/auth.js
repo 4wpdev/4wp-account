@@ -1,12 +1,12 @@
 /**
- * 4wp-auth Frontend Script
+ * 4WP Account frontend script
  */
 (function($) {
     'use strict';
 
     $(document).ready(function() {
         // Handle auth button clicks
-        $(document).on('click', '.forwp-auth-btn', function(e) {
+        $(document).on('click', '.forwp-account-signin-btn', function(e) {
             e.preventDefault();
             
             const provider = $(this).data('provider');
@@ -16,7 +16,7 @@
             }
 
             // Get authorization URL
-            const apiUrl = forwpAuth.apiUrl + 'auth/' + provider;
+            const apiUrl = forwpAccountSignin.apiUrl + 'auth/' + provider;
             console.log('Requesting auth URL from:', apiUrl);
             
             fetch(apiUrl)
@@ -48,7 +48,7 @@
 
         // Display error message if present
         const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('forwp_auth_error');
+        const error = urlParams.get('forwp_account_error');
         if (error) {
             const errorMessage = decodeURIComponent(error);
             // You can customize this to show a nicer error message

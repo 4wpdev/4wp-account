@@ -1,8 +1,8 @@
 /**
- * 4wp-auth Frontend Styles
+ * 4WP Account frontend styles
  */
 
-.forwp-auth-btn {
+.forwp-account-signin-btn {
     display: inline-block;
     padding: 10px 20px;
     margin: 5px;
@@ -16,52 +16,52 @@
     transition: all 0.3s ease;
 }
 
-.forwp-auth-btn:hover {
+.forwp-account-signin-btn:hover {
     background-color: #f5f5f5;
     border-color: #bbb;
 }
 
-.forwp-auth-btn[data-provider="gmail"] {
+.forwp-account-signin-btn[data-provider="gmail"] {
     background-color: #4285f4;
     color: #fff;
     border-color: #4285f4;
 }
 
-.forwp-auth-btn[data-provider="gmail"]:hover {
+.forwp-account-signin-btn[data-provider="gmail"]:hover {
     background-color: #357ae8;
 }
 
-.forwp-auth-btn[data-provider="facebook"] {
+.forwp-account-signin-btn[data-provider="facebook"] {
     background-color: #1877f2;
     color: #fff;
     border-color: #1877f2;
 }
 
-.forwp-auth-btn[data-provider="facebook"]:hover {
+.forwp-account-signin-btn[data-provider="facebook"]:hover {
     background-color: #166fe5;
 }
 
-.forwp-auth-btn[data-provider="instagram"] {
-    background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+.forwp-account-signin-btn[data-provider="github"] {
+    background-color: #24292f;
     color: #fff;
-    border-color: transparent;
+    border-color: #24292f;
 }
 
-.forwp-auth-btn[data-provider="instagram"]:hover {
-    opacity: 0.9;
+.forwp-account-signin-btn[data-provider="github"]:hover {
+    background-color: #1b1f24;
 }
 
-.forwp-auth-btn[data-provider="tiktok"] {
+.forwp-account-signin-btn[data-provider="tiktok"] {
     background-color: #000;
     color: #fff;
     border-color: #000;
 }
 
-.forwp-auth-btn[data-provider="tiktok"]:hover {
+.forwp-account-signin-btn[data-provider="tiktok"]:hover {
     background-color: #333;
 }
 
-.forwp-auth-container {
+.forwp-account-signin {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;

@@ -2,10 +2,10 @@
 /**
  * Authentication Manager
  *
- * @package ForWP\Auth\Auth
+ * @package ForWP\Account\Auth
  */
 
-namespace ForWP\Auth\Auth;
+namespace ForWP\Account\Auth;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -28,7 +28,7 @@ class AuthManager {
 	 *
 	 * @var array
 	 */
-	private $providers = array();
+	private $providers = [];
 
 	/**
 	 * Get plugin instance
@@ -54,19 +54,19 @@ class AuthManager {
 	 */
 	private function init() {
 		$this->register_providers();
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
 	/**
 	 * Register OAuth providers
 	 */
 	private function register_providers() {
-		$providers = array(
-			'gmail'     => '\ForWP\Auth\Providers\Gmail',
-			'facebook'  => '\ForWP\Auth\Providers\Facebook',
-			'instagram' => '\ForWP\Auth\Providers\Instagram',
-			// 'tiktok'     => '\ForWP\Auth\Providers\TikTok',
-		);
+		$providers = [
+			'gmail'     => '\ForWP\Account\Providers\Gmail',
+			'github'    => '\ForWP\Account\Providers\Github',
+			'facebook'  => '\ForWP\Account\Providers\Facebook',
+			// 'tiktok'     => '\ForWP\Account\Providers\TikTok',
+		];
 
 		foreach ( $providers as $id => $class ) {
 			if ( class_exists( $class ) ) {
@@ -98,32 +98,44 @@ class AuthManager {
 	 * Enqueue frontend scripts
 	 */
 	public function enqueue_scripts() {
+		if ( is_user_logged_in() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+			return;
+		}
+
+		$this->enqueue_scripts_for_context();
+	}
+
+	/**
+	 * Enqueue auth assets (account page, shortcodes, WC forms).
+	 */
+	public function enqueue_scripts_for_context() {
 		if ( is_user_logged_in() ) {
 			return;
 		}
 
 		wp_enqueue_script(
-			'forwp-auth',
-			FORWP_AUTH_PLUGIN_URL . 'assets/js/auth.js',
+			'forwp-account-signin',
+			FORWP_ACCOUNT_PLUGIN_URL . 'assets/js/auth.js',
 			array( 'jquery' ),
-			FORWP_AUTH_VERSION,
+			FORWP_ACCOUNT_VERSION,
 			true
 		);
 
 		wp_enqueue_style(
-			'forwp-auth',
-			FORWP_AUTH_PLUGIN_URL . 'assets/css/auth.css',
+			'forwp-account-signin',
+			FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/auth.css',
 			array(),
-			FORWP_AUTH_VERSION
+			FORWP_ACCOUNT_VERSION
 		);
 
 		wp_localize_script(
-			'forwp-auth',
-			'forwpAuth',
+			'forwp-account-signin',
+			'forwpAccountSignin',
 			array(
-				'apiUrl' => rest_url( 'forwp-auth/v1/' ),
-				'nonce'  => wp_create_nonce( 'forwp_auth_nonce' ),
+				'apiUrl' => rest_url( 'forwp-account/v1/' ),
+				'nonce'  => wp_create_nonce( 'forwp_account_nonce' ),
 			)
 		);
 	}
 }
+

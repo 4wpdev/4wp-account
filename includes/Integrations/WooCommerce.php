@@ -2,10 +2,12 @@
 /**
  * WooCommerce Integration
  *
- * @package ForWP\Auth\Integrations
+ * @package ForWP\Account\Integrations
  */
 
-namespace ForWP\Auth\Integrations;
+namespace ForWP\Account\Integrations;
+
+use ForWP\Account\Auth\ProviderSettings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -51,15 +53,15 @@ class WooCommerce {
 			return;
 		}
 
-		if ( get_option( 'forwp_auth_woocommerce_integration', '0' ) !== '1' ) {
+		if ( get_option( 'forwp_account_woocommerce_integration', '0' ) !== '1' ) {
 			return;
 		}
 
 		// Add social login buttons to WooCommerce login form
-		add_action( 'woocommerce_login_form_end', array( $this, 'render_login_buttons' ), 10 );
+		add_action( 'woocommerce_login_form_end', [ $this, 'render_login_buttons' ], 10 );
 
 		// Add social login buttons to WooCommerce registration form
-		add_action( 'woocommerce_register_form_end', array( $this, 'render_register_buttons' ), 10 );
+		add_action( 'woocommerce_register_form_end', [ $this, 'render_register_buttons' ], 10 );
 	}
 
 	/**
@@ -82,7 +84,7 @@ class WooCommerce {
 	private function render_buttons() {
 		// Get enabled providers
 		$providers = $this->get_enabled_providers();
-
+		
 		if ( empty( $providers ) ) {
 			return;
 		}
@@ -91,11 +93,11 @@ class WooCommerce {
 		$this->enqueue_scripts();
 
 		?>
-		<div class="forwp-auth-woocommerce-integration" style="margin-top: 20px; margin-bottom: 20px;">
+		<div class="forwp-account-woocommerce-signin" style="margin-top: 20px; margin-bottom: 20px;">
 			<?php foreach ( $providers as $provider_key => $provider_name ) : ?>
 				<button 
 					type="button" 
-					class="forwp-auth-btn forwp-auth-btn-<?php echo esc_attr( $provider_key ); ?> button" 
+					class="forwp-account-signin-btn forwp-account-signin-btn-<?php echo esc_attr( $provider_key ); ?> button" 
 					data-provider="<?php echo esc_attr( $provider_key ); ?>"
 					style="width: 100%; margin-bottom: 10px;"
 				>
@@ -112,23 +114,7 @@ class WooCommerce {
 	 * @return array
 	 */
 	private function get_enabled_providers() {
-		$all_providers = array(
-			'gmail'     => __( 'Gmail', '4wp-account' ),
-			'facebook'  => __( 'Facebook', '4wp-account' ),
-			'instagram' => __( 'Instagram', '4wp-account' ),
-			'tiktok'    => __( 'TikTok', '4wp-account' ),
-		);
-
-		$enabled = array();
-
-		foreach ( $all_providers as $key => $name ) {
-			$is_enabled = get_option( 'forwp_auth_provider_enabled_' . $key, '0' );
-			if ( '1' === $is_enabled ) {
-				$enabled[ $key ] = $name;
-			}
-		}
-
-		return $enabled;
+		return ProviderSettings::get_enabled_for_display();
 	}
 
 	/**
@@ -140,32 +126,32 @@ class WooCommerce {
 		}
 
 		// Enqueue auth script if not already enqueued
-		if ( ! wp_script_is( 'forwp-auth', 'enqueued' ) ) {
+		if ( ! wp_script_is( 'forwp-account-signin', 'enqueued' ) ) {
 			wp_enqueue_script(
-				'forwp-auth',
-				FORWP_AUTH_PLUGIN_URL . 'assets/js/auth.js',
-				array( 'jquery' ),
-				FORWP_AUTH_VERSION,
+				'forwp-account-signin',
+				FORWP_ACCOUNT_PLUGIN_URL . 'assets/js/auth.js',
+				[ 'jquery' ],
+				FORWP_ACCOUNT_VERSION,
 				true
 			);
 
 			wp_localize_script(
-				'forwp-auth',
-				'forwpAuth',
-				array(
-					'apiUrl' => rest_url( 'forwp-auth/v1/' ),
-					'nonce'  => wp_create_nonce( 'forwp_auth_nonce' ),
-				)
+				'forwp-account-signin',
+				'forwpAccountSignin',
+				[
+					'apiUrl' => rest_url( 'forwp-account/v1/' ),
+					'nonce'   => wp_create_nonce( 'forwp_account_nonce' ),
+				]
 			);
 		}
 
 		// Enqueue styles if not already enqueued
-		if ( ! wp_style_is( 'forwp-auth', 'enqueued' ) ) {
+		if ( ! wp_style_is( 'forwp-account-signin', 'enqueued' ) ) {
 			wp_enqueue_style(
-				'forwp-auth',
-				FORWP_AUTH_PLUGIN_URL . 'assets/css/auth.css',
-				array(),
-				FORWP_AUTH_VERSION
+				'forwp-account-signin',
+				FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/auth.css',
+				[],
+				FORWP_ACCOUNT_VERSION
 			);
 		}
 	}

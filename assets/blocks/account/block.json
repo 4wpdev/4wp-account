@@ -1,0 +1,20 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "forwp/account",
+	"title": "4WP Account",
+	"category": "widgets",
+	"description": "Sign-in for guests or account cabinet with left menu for logged-in users.",
+	"textdomain": "4wp-account",
+	"icon": "admin-users",
+	"keywords": [ "4wp", "4wp-account", "account", "login", "profile", "cabinet" ],
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ]
+	},
+	"editorScript": "file:./editor.js",
+	"style": "file:../../css/account.css",
+	"example": {
+		"attributes": {}
+	}
+}

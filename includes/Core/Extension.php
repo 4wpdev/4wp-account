@@ -2,10 +2,10 @@
 /**
  * Plugin Extension Core
  *
- * @package ForWP\Auth\Core
+ * @package ForWP\Account\Core
  */
 
-namespace ForWP\Auth\Core;
+namespace ForWP\Account\Core;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -46,8 +46,11 @@ class Extension {
 	 * Initialize plugin
 	 */
 	private function init() {
-		// Initialize modules
-		add_action( 'init', array( $this, 'load_modules' ), 1 );
+		if ( class_exists( '\ForWP\Account\Blocks\AccountBlocks' ) ) {
+			\ForWP\Account\Blocks\AccountBlocks::init();
+		}
+
+		add_action( 'init', [ $this, 'load_modules' ], 1 );
 	}
 
 	/**
@@ -55,33 +58,39 @@ class Extension {
 	 */
 	public function load_modules() {
 		// Load Auth Manager
-		if ( class_exists( '\ForWP\Auth\Auth\AuthManager' ) ) {
-			\ForWP\Auth\Auth\AuthManager::get_instance();
+		if ( class_exists( '\ForWP\Account\Auth\AuthManager' ) ) {
+			\ForWP\Account\Auth\AuthManager::get_instance();
 		}
 
 		// Load API routes
-		if ( class_exists( '\ForWP\Auth\API\Routes' ) ) {
-			\ForWP\Auth\API\Routes::get_instance();
+		if ( class_exists( '\ForWP\Account\API\Routes' ) ) {
+			\ForWP\Account\API\Routes::get_instance();
 		}
 
 		// Load Admin panel (always load to enable toolbar hiding on frontend)
-		if ( class_exists( '\ForWP\Auth\Admin\Menu' ) ) {
-			\ForWP\Auth\Admin\Menu::get_instance();
+		if ( class_exists( '\ForWP\Account\Admin\Menu' ) ) {
+			\ForWP\Account\Admin\Menu::get_instance();
 		}
 
 		// Load Shortcodes
-		if ( class_exists( '\ForWP\Auth\Shortcodes' ) ) {
-			\ForWP\Auth\Shortcodes::init();
+		if ( class_exists( '\ForWP\Account\Shortcodes' ) ) {
+			\ForWP\Account\Shortcodes::init();
+		}
+
+		// Account page (auth + cabinet shell)
+		if ( class_exists( '\ForWP\Account\Account\AccountPage' ) ) {
+			\ForWP\Account\Account\AccountPage::init();
 		}
 
 		// Load WooCommerce integration
-		if ( class_exists( '\ForWP\Auth\Integrations\WooCommerce' ) ) {
-			\ForWP\Auth\Integrations\WooCommerce::get_instance();
+		if ( class_exists( '\ForWP\Account\Integrations\WooCommerce' ) ) {
+			\ForWP\Account\Integrations\WooCommerce::get_instance();
 		}
 
 		// Run migrations
-		if ( class_exists( '\ForWP\Auth\Storage\Migrations' ) ) {
-			\ForWP\Auth\Storage\Migrations::run();
+		if ( class_exists( '\ForWP\Account\Storage\Migrations' ) ) {
+			\ForWP\Account\Storage\Migrations::run();
 		}
 	}
 }
+

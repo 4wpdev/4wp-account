@@ -2,10 +2,12 @@
 /**
  * Gmail OAuth Provider
  *
- * @package ForWP\Auth\Providers
+ * @package ForWP\Account\Providers
  */
 
-namespace ForWP\Auth\Providers;
+namespace ForWP\Account\Providers;
+
+use ForWP\Account\Auth\ProviderSettings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -65,7 +67,7 @@ class Gmail extends BaseProvider {
 		$this->client_id     = $this->get_option( 'client_id' );
 		$this->client_secret = $this->get_option( 'client_secret' );
 		$this->redirect_uri  = $this->get_redirect_uri();
-		$this->scopes        = array( 'openid', 'email', 'profile' );
+		$this->scopes        = [ 'openid', 'email', 'profile' ];
 	}
 
 	/**
@@ -74,7 +76,11 @@ class Gmail extends BaseProvider {
 	 * @return bool
 	 */
 	public function is_enabled() {
-		return $this->is_provider_toggled_on() && ! empty( $this->client_id ) && ! empty( $this->client_secret );
+		if ( ! ProviderSettings::is_enabled( $this->provider_id ) ) {
+			return false;
+		}
+
+		return ! empty( $this->client_id ) && ! empty( $this->client_secret );
 	}
 
 	/**
@@ -84,9 +90,9 @@ class Gmail extends BaseProvider {
 	 */
 	public function get_authorization_url() {
 		$state = wp_generate_password( 32, false );
-		set_transient( 'forwp_auth_gmail_state_' . $state, $state, 600 );
+		set_transient( 'forwp_account_gmail_state_' . $state, $state, 600 );
 
-		$params = array(
+		$params = [
 			'client_id'     => $this->client_id,
 			'redirect_uri'  => $this->redirect_uri,
 			'scope'         => implode( ' ', $this->scopes ),
@@ -94,7 +100,7 @@ class Gmail extends BaseProvider {
 			'state'         => $state,
 			'access_type'   => 'offline',
 			'prompt'        => 'consent',
-		);
+		];
 
 		return $this->authorization_endpoint . '?' . http_build_query( $params );
 	}
@@ -109,11 +115,11 @@ class Gmail extends BaseProvider {
 	public function handle_callback( $code, $state = '' ) {
 		// Verify state
 		if ( ! empty( $state ) ) {
-			$stored_state = get_transient( 'forwp_auth_gmail_state_' . $state );
+			$stored_state = get_transient( 'forwp_account_gmail_state_' . $state );
 			if ( $stored_state !== $state ) {
 				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-account' ) );
 			}
-			delete_transient( 'forwp_auth_gmail_state_' . $state );
+			delete_transient( 'forwp_account_gmail_state_' . $state );
 		}
 
 		// Exchange code for token
@@ -133,14 +139,14 @@ class Gmail extends BaseProvider {
 		}
 
 		// Create or update user
-		$user_data = array(
+		$user_data = [
 			'id'         => $user_info['id'],
 			'email'      => $user_info['email'],
 			'name'       => $user_info['name'],
 			'first_name' => $user_info['given_name'] ?? '',
 			'last_name'  => $user_info['family_name'] ?? '',
 			'avatar'     => $user_info['picture'] ?? '',
-		);
+		];
 
 		$user_id = $this->create_or_update_user( $user_data );
 
@@ -152,10 +158,10 @@ class Gmail extends BaseProvider {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id );
 
-		return array(
-			'user_id'   => $user_id,
+		return [
+			'user_id' => $user_id,
 			'user_data' => $user_data,
-		);
+		];
 	}
 
 	/**
@@ -167,15 +173,15 @@ class Gmail extends BaseProvider {
 	protected function exchange_code_for_token( $code ) {
 		$response = wp_remote_post(
 			$this->token_endpoint,
-			array(
-				'body' => array(
+			[
+				'body' => [
 					'code'          => $code,
 					'client_id'     => $this->client_id,
 					'client_secret' => $this->client_secret,
 					'redirect_uri'  => $this->redirect_uri,
 					'grant_type'    => 'authorization_code',
-				),
-			)
+				],
+			]
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -200,11 +206,11 @@ class Gmail extends BaseProvider {
 	protected function get_user_info( $access_token ) {
 		$response = wp_remote_get(
 			$this->user_info_endpoint,
-			array(
-				'headers' => array(
+			[
+				'headers' => [
 					'Authorization' => 'Bearer ' . $access_token,
-				),
-			)
+				],
+			]
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -226,6 +232,11 @@ class Gmail extends BaseProvider {
 	 * @return string
 	 */
 	protected function get_redirect_uri() {
-		return home_url( '/wp-json/forwp-auth/v1/callback/gmail' );
+		return home_url( '/wp-json/forwp-account/v1/callback/gmail' );
 	}
 }
+
+
+
+
+

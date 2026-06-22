@@ -2,10 +2,12 @@
 /**
  * TikTok OAuth Provider
  *
- * @package ForWP\Auth\Providers
+ * @package ForWP\Account\Providers
  */
 
-namespace ForWP\Auth\Providers;
+namespace ForWP\Account\Providers;
+
+use ForWP\Account\Auth\ProviderSettings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -74,6 +76,10 @@ class TikTok extends BaseProvider {
 	 * @return bool
 	 */
 	public function is_enabled() {
+		if ( ! ProviderSettings::is_enabled( $this->provider_id ) ) {
+			return false;
+		}
+
 		return ! empty( $this->client_id ) && ! empty( $this->client_secret );
 	}
 
@@ -84,7 +90,7 @@ class TikTok extends BaseProvider {
 	 */
 	public function get_authorization_url() {
 		$state = wp_generate_password( 32, false );
-		set_transient( 'forwp_auth_tiktok_state_' . $state, $state, 600 );
+		set_transient( 'forwp_account_tiktok_state_' . $state, $state, 600 );
 
 		$params = array(
 			'client_key'    => $this->client_id,
@@ -107,11 +113,11 @@ class TikTok extends BaseProvider {
 	public function handle_callback( $code, $state = '' ) {
 		// Verify state
 		if ( ! empty( $state ) ) {
-			$stored_state = get_transient( 'forwp_auth_tiktok_state_' . $state );
+			$stored_state = get_transient( 'forwp_account_tiktok_state_' . $state );
 			if ( $stored_state !== $state ) {
 				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-account' ) );
 			}
-			delete_transient( 'forwp_auth_tiktok_state_' . $state );
+			delete_transient( 'forwp_account_tiktok_state_' . $state );
 		}
 
 		// Exchange code for token
@@ -237,6 +243,6 @@ class TikTok extends BaseProvider {
 	 * @return string
 	 */
 	protected function get_redirect_uri() {
-		return home_url( '/wp-json/forwp-auth/v1/callback/tiktok' );
+		return home_url( '/wp-json/forwp-account/v1/callback/tiktok' );
 	}
 }

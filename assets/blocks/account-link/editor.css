@@ -1,0 +1,23 @@
+.forwp-account-link-block-editor.forwp-account-nav-link--editor {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.5rem 0.75rem;
+	border-radius: 0;
+	text-decoration: none;
+	color: currentColor;
+	background: var(--wp--preset--color--cyan-600, #0073aa);
+}
+
+.forwp-account-link-block-editor.forwp-account-nav-link--editor .forwp-account-nav-link__text {
+	font-size: 0;
+	width: 0;
+	height: 0;
+	overflow: hidden;
+	position: absolute;
+}
+
+.forwp-account-link-block-editor.forwp-account-nav-link--editor .forwp-account-nav-icon {
+	display: block;
+	color: #fff;
+}

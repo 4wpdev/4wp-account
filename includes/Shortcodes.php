@@ -2,10 +2,12 @@
 /**
  * Shortcodes
  *
- * @package ForWP\Auth
+ * @package ForWP\Account
  */
 
-namespace ForWP\Auth;
+namespace ForWP\Account;
+
+use ForWP\Account\Auth\ProviderSettings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -20,8 +22,8 @@ class Shortcodes {
 	 * Initialize shortcodes
 	 */
 	public static function init() {
-		add_shortcode( 'forwp_auth_login', array( __CLASS__, 'render_login_button' ) );
-		add_shortcode( 'forwp_auth_buttons', array( __CLASS__, 'render_auth_buttons' ) );
+		add_shortcode( 'forwp_account_login', [ __CLASS__, 'render_login_button' ] );
+		add_shortcode( 'forwp_account_signin_buttons', [ __CLASS__, 'render_auth_buttons' ] );
 	}
 
 	/**
@@ -32,84 +34,79 @@ class Shortcodes {
 	 */
 	public static function render_login_button( $atts ) {
 		$atts = shortcode_atts(
-			array(
+			[
 				'provider' => 'gmail',
 				'text'     => '',
-			),
+			],
 			$atts,
-			'forwp_auth_login'
+			'forwp_account_login'
 		);
 
-		$provider = sanitize_text_field( $atts['provider'] );
-		$text     = ! empty( $atts['text'] ) ? sanitize_text_field( $atts['text'] ) : __( 'Sign in with Gmail', '4wp-account' );
+		$provider = sanitize_key( (string) $atts['provider'] );
 
-		// Check if user is logged in
+		if ( ! ProviderSettings::is_enabled( $provider ) ) {
+			return '';
+		}
+
+		$labels = ProviderSettings::get_button_labels();
+		$text   = ! empty( $atts['text'] ) ? sanitize_text_field( $atts['text'] ) : ( $labels[ $provider ] ?? __( 'Sign in', '4wp-account' ) );
+
 		if ( is_user_logged_in() ) {
 			$current_user = wp_get_current_user();
-			return '<div class="forwp-auth-logged-in">' . esc_html__( 'You are logged in as:', '4wp-account' ) . ' <strong>' . esc_html( $current_user->display_name ) . '</strong></div>';
+			return '<div class="forwp-account-signin-logged-in">' . esc_html__( 'You are logged in as:', '4wp-account' ) . ' <strong>' . esc_html( $current_user->display_name ) . '</strong></div>';
 		}
 
 		return sprintf(
-			'<button class="forwp-auth-btn" data-provider="%s">%s</button>',
+			'<button class="forwp-account-signin-btn" data-provider="%s">%s</button>',
 			esc_attr( $provider ),
 			esc_html( $text )
 		);
 	}
 
 	/**
-	 * Render all auth buttons
+	 * Render enabled auth buttons only.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string
 	 */
 	public static function render_auth_buttons( $atts ) {
 		$atts = shortcode_atts(
-			array(
-				'providers' => 'gmail',
-			),
+			[
+				'providers' => 'auto',
+			],
 			$atts,
-			'forwp_auth_buttons'
+			'forwp_account_signin_buttons'
 		);
 
-		// Check if user is logged in
 		if ( is_user_logged_in() ) {
 			$current_user = wp_get_current_user();
-			return '<div class="forwp-auth-logged-in">' . esc_html__( 'You are logged in as:', '4wp-account' ) . ' <strong>' . esc_html( $current_user->display_name ) . '</strong></div>';
+			return '<div class="forwp-account-signin-logged-in">' . esc_html__( 'You are logged in as:', '4wp-account' ) . ' <strong>' . esc_html( $current_user->display_name ) . '</strong></div>';
 		}
 
-		$providers = array_map( 'trim', explode( ',', $atts['providers'] ) );
-		$output    = '<div class="forwp-auth-container">';
+		return self::render_buttons_markup( ProviderSettings::parse_provider_list( (string) $atts['providers'] ) );
+	}
 
-		foreach ( $providers as $provider ) {
-			$provider = sanitize_text_field( $provider );
-			$text     = self::get_provider_text( $provider );
+	/**
+	 * @param string[] $provider_ids Enabled provider IDs.
+	 */
+	public static function render_buttons_markup( array $provider_ids ): string {
+		$labels = ProviderSettings::get_button_labels();
+		$output = '<div class="forwp-account-signin">';
+
+		foreach ( $provider_ids as $provider ) {
+			if ( ! isset( $labels[ $provider ] ) ) {
+				continue;
+			}
 
 			$output .= sprintf(
-				'<button class="forwp-auth-btn" data-provider="%s">%s</button>',
+				'<button type="button" class="forwp-account-signin-btn forwp-account-signin-btn-%1$s" data-provider="%1$s">%2$s</button>',
 				esc_attr( $provider ),
-				esc_html( $text )
+				esc_html( $labels[ $provider ] )
 			);
 		}
 
 		$output .= '</div>';
 
 		return $output;
-	}
-
-	/**
-	 * Get provider button text
-	 *
-	 * @param string $provider Provider ID.
-	 * @return string
-	 */
-	private static function get_provider_text( $provider ) {
-		$texts = array(
-			'gmail'     => __( 'Sign in with Gmail', '4wp-account' ),
-			'facebook'  => __( 'Sign in with Facebook', '4wp-account' ),
-			'instagram' => __( 'Sign in with Instagram', '4wp-account' ),
-			'tiktok'    => __( 'Sign in with TikTok', '4wp-account' ),
-		);
-
-		return $texts[ $provider ] ?? __( 'Sign in', '4wp-account' );
 	}
 }

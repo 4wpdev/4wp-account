@@ -2,10 +2,12 @@
 /**
  * Facebook OAuth Provider
  *
- * @package ForWP\Auth\Providers
+ * @package ForWP\Account\Providers
  */
 
-namespace ForWP\Auth\Providers;
+namespace ForWP\Account\Providers;
+
+use ForWP\Account\Auth\ProviderSettings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -65,7 +67,7 @@ class Facebook extends BaseProvider {
 		$this->client_id     = $this->get_option( 'app_id' );
 		$this->client_secret = $this->get_option( 'app_secret' );
 		$this->redirect_uri  = $this->get_redirect_uri();
-		$this->scopes        = array( 'email', 'public_profile' );
+		$this->scopes        = [ 'email', 'public_profile' ];
 	}
 
 	/**
@@ -74,7 +76,11 @@ class Facebook extends BaseProvider {
 	 * @return bool
 	 */
 	public function is_enabled() {
-		return $this->is_provider_toggled_on() && ! empty( $this->client_id ) && ! empty( $this->client_secret );
+		if ( ! ProviderSettings::is_enabled( $this->provider_id ) ) {
+			return false;
+		}
+
+		return ! empty( $this->client_id ) && ! empty( $this->client_secret );
 	}
 
 	/**
@@ -84,15 +90,15 @@ class Facebook extends BaseProvider {
 	 */
 	public function get_authorization_url() {
 		$state = wp_generate_password( 32, false );
-		set_transient( 'forwp_auth_facebook_state_' . $state, $state, 600 );
+		set_transient( 'forwp_account_facebook_state_' . $state, $state, 600 );
 
-		$params = array(
+		$params = [
 			'client_id'     => $this->client_id,
 			'redirect_uri'  => $this->redirect_uri,
 			'scope'         => implode( ',', $this->scopes ),
 			'response_type' => 'code',
 			'state'         => $state,
-		);
+		];
 
 		return $this->authorization_endpoint . '?' . http_build_query( $params );
 	}
@@ -107,11 +113,11 @@ class Facebook extends BaseProvider {
 	public function handle_callback( $code, $state = '' ) {
 		// Verify state
 		if ( ! empty( $state ) ) {
-			$stored_state = get_transient( 'forwp_auth_facebook_state_' . $state );
+			$stored_state = get_transient( 'forwp_account_facebook_state_' . $state );
 			if ( $stored_state !== $state ) {
 				return new \WP_Error( 'invalid_state', __( 'Invalid state parameter', '4wp-account' ) );
 			}
-			delete_transient( 'forwp_auth_facebook_state_' . $state );
+			delete_transient( 'forwp_account_facebook_state_' . $state );
 		}
 
 		// Exchange code for token
@@ -131,14 +137,14 @@ class Facebook extends BaseProvider {
 		}
 
 		// Create or update user
-		$user_data = array(
+		$user_data = [
 			'id'         => $user_info['id'],
 			'email'      => $user_info['email'] ?? '',
 			'name'       => $user_info['name'] ?? '',
 			'first_name' => $user_info['first_name'] ?? '',
 			'last_name'  => $user_info['last_name'] ?? '',
 			'avatar'     => $this->get_user_picture( $access_token, $user_info['id'] ),
-		);
+		];
 
 		$user_id = $this->create_or_update_user( $user_data );
 
@@ -150,10 +156,10 @@ class Facebook extends BaseProvider {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id );
 
-		return array(
-			'user_id'   => $user_id,
+		return [
+			'user_id' => $user_id,
 			'user_data' => $user_data,
-		);
+		];
 	}
 
 	/**
@@ -164,13 +170,13 @@ class Facebook extends BaseProvider {
 	 */
 	protected function exchange_code_for_token( $code ) {
 		$redirect_uri = $this->redirect_uri;
-		$url          = add_query_arg(
-			array(
+		$url = add_query_arg(
+			[
 				'client_id'     => $this->client_id,
 				'client_secret' => $this->client_secret,
 				'redirect_uri'  => $redirect_uri,
 				'code'          => $code,
-			),
+			],
 			$this->token_endpoint
 		);
 
@@ -197,10 +203,10 @@ class Facebook extends BaseProvider {
 	 */
 	protected function get_user_info( $access_token ) {
 		$url = add_query_arg(
-			array(
+			[
 				'fields'       => 'id,name,email,first_name,last_name',
 				'access_token' => $access_token,
-			),
+			],
 			$this->user_info_endpoint
 		);
 
@@ -228,14 +234,14 @@ class Facebook extends BaseProvider {
 	 */
 	protected function get_user_picture( $access_token, $user_id ) {
 		$url = add_query_arg(
-			array(
+			[
 				'type'         => 'large',
 				'access_token' => $access_token,
-			),
+			],
 			"https://graph.facebook.com/v18.0/{$user_id}/picture"
 		);
 
-		$response = wp_remote_get( $url, array( 'redirection' => 0 ) );
+		$response = wp_remote_get( $url, [ 'redirection' => 0 ] );
 
 		if ( ! is_wp_error( $response ) ) {
 			$location = wp_remote_retrieve_header( $response, 'location' );
@@ -253,6 +259,11 @@ class Facebook extends BaseProvider {
 	 * @return string
 	 */
 	protected function get_redirect_uri() {
-		return home_url( '/wp-json/forwp-auth/v1/callback/facebook' );
+		return home_url( '/wp-json/forwp-account/v1/callback/facebook' );
 	}
 }
+
+
+
+
+

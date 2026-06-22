@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "forwp/auth-buttons",
+	"title": "4WP Sign-in Buttons",
+	"category": "widgets",
+	"description": "Social sign-in buttons (Google, GitHub, …).",
+	"textdomain": "4wp-account",
+	"icon": "lock",
+	"keywords": [ "4wp", "4wp-account", "auth", "login", "google", "github" ],
+	"attributes": {
+		"providers": {
+			"type": "string",
+			"default": "auto"
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": true
+	},
+	"editorScript": "file:./editor.js",
+	"style": "file:../../css/auth.css",
+	"example": {
+		"attributes": {
+			"providers": "gmail,github"
+		}
+	}
+}

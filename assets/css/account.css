@@ -1,0 +1,192 @@
+/**
+ * 4WP Account — cabinet layout (WooCommerce-style).
+ */
+
+.forwp-account {
+	box-sizing: border-box;
+	max-width: 960px;
+	margin: 0 auto;
+}
+
+.forwp-account *,
+.forwp-account *::before,
+.forwp-account *::after {
+	box-sizing: border-box;
+}
+
+/* Guest sign-in */
+.forwp-account--guest {
+	padding: 2rem 1.5rem;
+	border: 1px solid var(--wp--preset--color--contrast-3, #ddd);
+	border-radius: 8px;
+	background: var(--wp--preset--color--base, #fff);
+}
+
+.forwp-account-guest__title {
+	margin: 0 0 0.5rem;
+	font-size: 1.5rem;
+}
+
+.forwp-account-guest__lead {
+	margin: 0 0 1.5rem;
+	color: var(--wp--preset--color--contrast-2, #555);
+}
+
+.forwp-account-signin--account {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	max-width: 320px;
+}
+
+.forwp-account-signin--account .forwp-account-signin-btn {
+	width: 100%;
+	margin: 0;
+}
+
+.forwp-account-notice {
+	padding: 0.75rem 1rem;
+	border-radius: 6px;
+	margin: 1rem 0 0;
+}
+
+.forwp-account-notice--error {
+	background: #fdecea;
+	color: #611a15;
+	border: 1px solid #f5c2c0;
+}
+
+.forwp-account-notice--warning {
+	background: #fff8e5;
+	color: #6b5500;
+	border: 1px solid #ffe08a;
+}
+
+/* Logged-in layout */
+.forwp-account--logged-in {
+	display: grid;
+	grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+	gap: 2rem;
+	align-items: start;
+}
+
+@media (max-width: 782px) {
+	.forwp-account--logged-in {
+		grid-template-columns: 1fr;
+	}
+}
+
+.forwp-account-nav {
+	border: 1px solid var(--wp--preset--color--contrast-3, #ddd);
+	border-radius: 8px;
+	padding: 1rem;
+	background: var(--wp--preset--color--base-2, #f8f8f8);
+}
+
+.forwp-account-nav__user {
+	margin: 0 0 1rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--wp--preset--color--contrast-3, #ddd);
+	line-height: 1.4;
+}
+
+.forwp-account-nav__user span {
+	display: block;
+	font-size: 0.875rem;
+	color: var(--wp--preset--color--contrast-2, #666);
+	word-break: break-word;
+}
+
+.forwp-account-nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.forwp-account-nav li + li {
+	margin-top: 0.25rem;
+}
+
+.forwp-account-nav a {
+	display: block;
+	padding: 0.5rem 0.65rem;
+	border-radius: 6px;
+	text-decoration: none;
+	color: inherit;
+}
+
+.forwp-account-nav a:hover,
+.forwp-account-nav li.is-active a {
+	background: var(--wp--preset--color--base, #fff);
+	font-weight: 600;
+}
+
+.forwp-account-nav__logout {
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--wp--preset--color--contrast-3, #ddd);
+}
+
+.forwp-account-content {
+	min-width: 0;
+}
+
+.forwp-account-section__title {
+	margin-top: 0;
+	font-size: 1.35rem;
+}
+
+.forwp-account-dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0.35rem 1rem;
+	margin: 1rem 0 0;
+}
+
+.forwp-account-dl dt {
+	font-weight: 600;
+}
+
+.forwp-account-dl dd {
+	margin: 0;
+}
+
+.forwp-account-links {
+	margin: 0.75rem 0 0;
+	padding-left: 1.25rem;
+}
+
+.forwp-account-links li + li {
+	margin-top: 0.35rem;
+}
+
+/* Header nav link + icons */
+.forwp-account-nav-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+.forwp-account-nav-icon {
+	flex-shrink: 0;
+	vertical-align: middle;
+}
+
+.forwp-account-nav-icon--user {
+	display: none;
+}
+
+.logged-in .forwp-account-nav-icon--guest,
+.logged-in .forwp-account-nav-item .forwp-account-nav-icon--guest {
+	display: none;
+}
+
+.logged-in .forwp-account-nav-icon--user,
+.logged-in .forwp-account-nav-item .forwp-account-nav-icon--user {
+	display: inline-block;
+}
+
+.forwp-account-nav-item .forwp-account-nav-link__text,
+.forwp-account-nav-link .forwp-account-nav-link__text {
+	display: inline;
+}

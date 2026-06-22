@@ -1,0 +1,223 @@
+/* 4wp-account: account menu header widget. Classic cabinet dropdown. */
+
+.forwp-account-menu {
+	position: relative;
+	display: inline-block;
+	z-index: 100;
+}
+
+.forwp-account-menu__button {
+	position: relative;
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	border-radius: 8px;
+	padding: 0;
+	transition: background 0.2s ease;
+	z-index: 1;
+	color: inherit;
+	box-shadow: none;
+	outline: none;
+}
+
+.forwp-account-menu__button:focus {
+	outline: none;
+}
+
+.forwp-account-menu__button:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.forwp-account-menu__button:hover {
+	background: rgba(0, 0, 0, 0.05);
+}
+
+.forwp-account-menu__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.forwp-account-menu__icon .forwp-account-nav-icon--user {
+	display: inline-block;
+}
+
+.forwp-account-menu__icon .forwp-account-nav-icon--guest {
+	display: none;
+}
+
+.forwp-account-menu--guest .forwp-account-nav-icon--guest {
+	display: inline-block;
+}
+
+.forwp-account-menu--guest .forwp-account-nav-icon--user {
+	display: none;
+}
+
+.forwp-account-menu__dropdown {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	left: auto;
+	width: 280px;
+	max-width: calc(100vw - 32px);
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-8px);
+	transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+	z-index: 10000;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.forwp-account-menu__dropdown--active {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+.forwp-account-menu__dropdown-header {
+	padding: 16px 20px;
+	border-bottom: 1px solid #e5e7eb;
+	background: #f9fafb;
+}
+
+.forwp-account-menu__user-name {
+	margin: 0 0 4px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1f2937;
+	line-height: 1.3;
+	word-break: break-word;
+}
+
+.forwp-account-menu__user-email {
+	margin: 0;
+	font-size: 12px;
+	color: #6b7280;
+	line-height: 1.3;
+	word-break: break-word;
+}
+
+.forwp-account-menu__list {
+	display: flex;
+	flex-direction: column;
+	padding: 8px 0;
+	max-height: 320px;
+	overflow-y: auto;
+}
+
+.forwp-account-menu__item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 20px;
+	text-decoration: none;
+	color: #374151;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.forwp-account-menu__item:hover {
+	background: #f3f4f6;
+	color: #111827;
+}
+
+.forwp-account-menu__item--active {
+	background: #eff6ff;
+	color: #1d4ed8;
+	font-weight: 600;
+}
+
+.forwp-account-menu__item-icon {
+	flex-shrink: 0;
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	background: #f3f4f6;
+	color: #4b5563;
+}
+
+.forwp-account-menu__item--active .forwp-account-menu__item-icon {
+	background: #dbeafe;
+	color: #2563eb;
+}
+
+.forwp-account-menu__item-icon .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.forwp-account-menu__item-label {
+	flex: 1;
+	min-width: 0;
+	font-size: 14px;
+	line-height: 1.3;
+}
+
+.forwp-account-menu__item-external {
+	flex-shrink: 0;
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+	color: #9ca3af;
+}
+
+.forwp-account-menu__footer {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	padding: 12px 20px;
+	border-top: 1px solid #e5e7eb;
+	background: #fff;
+}
+
+.forwp-account-menu__footer-link {
+	color: #2563eb;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.forwp-account-menu__footer-link:hover {
+	text-decoration: underline;
+}
+
+.forwp-account-menu__footer-link--logout {
+	color: #6b7280;
+	margin-left: auto;
+}
+
+.forwp-account-menu__footer-link--logout:hover {
+	color: #b32d2e;
+}
+
+.forwp-header-actions .forwp-account-menu__button {
+	border: none;
+	box-shadow: none;
+	outline: none;
+	background: transparent;
+}
+
+.forwp-header-actions .forwp-account-menu--guest .forwp-account-menu__button:hover,
+.forwp-header-actions .forwp-account-menu__button:hover {
+	background: rgba(0, 0, 0, 0.05);
+}
+
+.forwp-account-menu--editor .forwp-account-menu__button--editor {
+	border: 1px dashed #c3c4c7;
+	border-radius: 8px;
+}

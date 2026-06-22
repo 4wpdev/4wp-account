@@ -2,10 +2,10 @@
 /**
  * Base OAuth Provider
  *
- * @package ForWP\Auth\Providers
+ * @package ForWP\Account\Providers
  */
 
-namespace ForWP\Auth\Providers;
+namespace ForWP\Account\Providers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -105,8 +105,8 @@ abstract class BaseProvider {
 
 		if ( $user ) {
 			// Update existing user meta
-			update_user_meta( $user->ID, 'forwp_auth_provider', $this->provider_id );
-			update_user_meta( $user->ID, 'forwp_auth_provider_id', $user_data['id'] );
+			update_user_meta( $user->ID, 'forwp_account_provider', $this->provider_id );
+			update_user_meta( $user->ID, 'forwp_account_provider_id', $user_data['id'] );
 			return $user->ID;
 		}
 
@@ -125,13 +125,13 @@ abstract class BaseProvider {
 		}
 
 		// Set user meta
-		update_user_meta( $user_id, 'forwp_auth_provider', $this->provider_id );
-		update_user_meta( $user_id, 'forwp_auth_provider_id', $user_data['id'] );
+		update_user_meta( $user_id, 'forwp_account_provider', $this->provider_id );
+		update_user_meta( $user_id, 'forwp_account_provider_id', $user_data['id'] );
 		update_user_meta( $user_id, 'first_name', $user_data['first_name'] ?? '' );
 		update_user_meta( $user_id, 'last_name', $user_data['last_name'] ?? '' );
 
 		if ( ! empty( $user_data['avatar'] ) ) {
-			update_user_meta( $user_id, 'forwp_auth_avatar', $user_data['avatar'] );
+			update_user_meta( $user_id, 'forwp_account_avatar', $user_data['avatar'] );
 		}
 
 		return $user_id;
@@ -174,6 +174,6 @@ abstract class BaseProvider {
 	 * @return mixed
 	 */
 	protected function get_option( $key, $default = '' ) {
-		return get_option( "forwp_auth_{$this->provider_id}_{$key}", $default );
+		return get_option( "forwp_account_{$this->provider_id}_{$key}", $default );
 	}
 }
