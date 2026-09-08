@@ -16,26 +16,43 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class ProviderSettings {
 
+	public const TYPE_FORM  = 'form';
+	public const TYPE_OAUTH = 'oauth';
+
 	/**
 	 * @return array<string, array<string, string>>
 	 */
 	public static function get_registry(): array {
 		return array(
+			'email'    => array(
+				'label'  => __( 'Email', '4wp-account' ),
+				'status' => 'active',
+				'type'   => self::TYPE_FORM,
+			),
 			'gmail'    => array(
 				'label'  => __( 'Google', '4wp-account' ),
 				'status' => 'active',
+				'type'   => self::TYPE_OAUTH,
 			),
 			'github'   => array(
 				'label'  => __( 'GitHub', '4wp-account' ),
 				'status' => 'active',
+				'type'   => self::TYPE_OAUTH,
 			),
 			'facebook' => array(
 				'label'  => __( 'Facebook', '4wp-account' ),
 				'status' => 'soon',
+				'type'   => self::TYPE_OAUTH,
 			),
 			'tiktok'   => array(
 				'label'  => __( 'TikTok', '4wp-account' ),
+				'status' => 'active',
+				'type'   => self::TYPE_OAUTH,
+			),
+			'x'        => array(
+				'label'  => __( 'X', '4wp-account' ),
 				'status' => 'soon',
+				'type'   => self::TYPE_OAUTH,
 			),
 		);
 	}
@@ -78,7 +95,9 @@ class ProviderSettings {
 			return false;
 		}
 
-		return '1' === get_option( 'forwp_account_provider_enabled_' . $provider_id, '0' );
+		$default = ( 'email' === $provider_id ) ? '1' : '0';
+
+		return '1' === get_option( 'forwp_account_provider_enabled_' . $provider_id, $default );
 	}
 
 	/**
@@ -101,9 +120,14 @@ class ProviderSettings {
 	 * @return array<string, string> Provider ID => button label.
 	 */
 	public static function get_enabled_for_display(): array {
-		$enabled = array();
+		$enabled  = array();
+		$registry = self::get_registry();
 
 		foreach ( self::get_button_labels() as $id => $label ) {
+			if ( self::TYPE_FORM === ( $registry[ $id ]['type'] ?? self::TYPE_OAUTH ) ) {
+				continue;
+			}
+
 			if ( self::is_enabled( $id ) ) {
 				$enabled[ $id ] = $label;
 			}
@@ -121,11 +145,19 @@ class ProviderSettings {
 	public static function filter_enabled_ids( array $provider_ids ): array {
 		$filtered = array();
 
+		$registry = self::get_registry();
+
 		foreach ( $provider_ids as $provider_id ) {
 			$provider_id = sanitize_key( (string) $provider_id );
-			if ( $provider_id !== '' && self::is_enabled( $provider_id ) ) {
-				$filtered[] = $provider_id;
+			if ( $provider_id === '' || ! self::is_enabled( $provider_id ) ) {
+				continue;
 			}
+
+			if ( self::TYPE_FORM === ( $registry[ $provider_id ]['type'] ?? self::TYPE_OAUTH ) ) {
+				continue;
+			}
+
+			$filtered[] = $provider_id;
 		}
 
 		return array_values( array_unique( $filtered ) );

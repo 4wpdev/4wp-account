@@ -65,7 +65,7 @@ class AuthManager {
 			'gmail'     => '\ForWP\Account\Providers\Gmail',
 			'github'    => '\ForWP\Account\Providers\Github',
 			'facebook'  => '\ForWP\Account\Providers\Facebook',
-			// 'tiktok'     => '\ForWP\Account\Providers\TikTok',
+			'tiktok'    => '\ForWP\Account\Providers\TikTok',
 		];
 
 		foreach ( $providers as $id => $class ) {

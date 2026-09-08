@@ -8,6 +8,7 @@
 namespace ForWP\Account\Integrations;
 
 use ForWP\Account\Auth\ProviderSettings;
+use ForWP\Account\Auth\SocialButtons;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -92,20 +93,7 @@ class WooCommerce {
 		// Ensure scripts are enqueued
 		$this->enqueue_scripts();
 
-		?>
-		<div class="forwp-account-woocommerce-signin" style="margin-top: 20px; margin-bottom: 20px;">
-			<?php foreach ( $providers as $provider_key => $provider_name ) : ?>
-				<button 
-					type="button" 
-					class="forwp-account-signin-btn forwp-account-signin-btn-<?php echo esc_attr( $provider_key ); ?> button" 
-					data-provider="<?php echo esc_attr( $provider_key ); ?>"
-					style="width: 100%; margin-bottom: 10px;"
-				>
-					<?php echo esc_html( $provider_name ); ?>
-				</button>
-			<?php endforeach; ?>
-		</div>
-		<?php
+		echo SocialButtons::render_list( $providers, array( 'woocommerce' => true ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Plugin SVG + escaped labels.
 	}
 
 	/**

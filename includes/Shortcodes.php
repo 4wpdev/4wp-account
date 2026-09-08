@@ -8,6 +8,7 @@
 namespace ForWP\Account;
 
 use ForWP\Account\Auth\ProviderSettings;
+use ForWP\Account\Auth\SocialButtons;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -56,11 +57,7 @@ class Shortcodes {
 			return '<div class="forwp-account-signin-logged-in">' . esc_html__( 'You are logged in as:', '4wp-account' ) . ' <strong>' . esc_html( $current_user->display_name ) . '</strong></div>';
 		}
 
-		return sprintf(
-			'<button class="forwp-account-signin-btn" data-provider="%s">%s</button>',
-			esc_attr( $provider ),
-			esc_html( $text )
-		);
+		return SocialButtons::render_button( $provider, $text );
 	}
 
 	/**
@@ -90,23 +87,6 @@ class Shortcodes {
 	 * @param string[] $provider_ids Enabled provider IDs.
 	 */
 	public static function render_buttons_markup( array $provider_ids ): string {
-		$labels = ProviderSettings::get_button_labels();
-		$output = '<div class="forwp-account-signin">';
-
-		foreach ( $provider_ids as $provider ) {
-			if ( ! isset( $labels[ $provider ] ) ) {
-				continue;
-			}
-
-			$output .= sprintf(
-				'<button type="button" class="forwp-account-signin-btn forwp-account-signin-btn-%1$s" data-provider="%1$s">%2$s</button>',
-				esc_attr( $provider ),
-				esc_html( $labels[ $provider ] )
-			);
-		}
-
-		$output .= '</div>';
-
-		return $output;
+		return SocialButtons::render_list( $provider_ids );
 	}
 }

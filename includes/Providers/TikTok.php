@@ -1,6 +1,6 @@
 <?php
 /**
- * TikTok OAuth Provider
+ * TikTok OAuth Provider (Login Kit v2).
  *
  * @package ForWP\Account\Providers
  */
@@ -16,41 +16,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * TikTok provider class
+ * TikTok Login Kit — Client Key / Secret from developers.tiktok.com.
  */
 class TikTok extends BaseProvider {
 
 	/**
-	 * Provider instance
-	 *
-	 * @var TikTok
+	 * @var TikTok|null
 	 */
 	private static $instance = null;
 
-	/**
-	 * Authorization endpoint
-	 *
-	 * @var string
-	 */
 	protected $authorization_endpoint = 'https://www.tiktok.com/v2/auth/authorize/';
 
-	/**
-	 * Token endpoint
-	 *
-	 * @var string
-	 */
 	protected $token_endpoint = 'https://open.tiktokapis.com/v2/oauth/token/';
 
-	/**
-	 * User info endpoint
-	 *
-	 * @var string
-	 */
 	protected $user_info_endpoint = 'https://open.tiktokapis.com/v2/user/info/';
 
 	/**
-	 * Get provider instance
-	 *
 	 * @return TikTok
 	 */
 	public static function get_instance() {
@@ -60,9 +41,6 @@ class TikTok extends BaseProvider {
 		return self::$instance;
 	}
 
-	/**
-	 * Constructor
-	 */
 	private function __construct() {
 		$this->provider_id   = 'tiktok';
 		$this->provider_name = 'TikTok';
@@ -73,8 +51,6 @@ class TikTok extends BaseProvider {
 	}
 
 	/**
-	 * Check if provider is enabled
-	 *
 	 * @return bool
 	 */
 	public function is_enabled() {
@@ -86,63 +62,66 @@ class TikTok extends BaseProvider {
 	}
 
 	/**
-	 * Get authorization URL
-	 *
 	 * @return string
 	 */
 	public function get_authorization_url() {
-		$state = OAuthState::create( $this->provider_id );
+		$state          = OAuthState::create( $this->provider_id );
+		$code_verifier  = $this->create_code_verifier();
+		$code_challenge = $this->code_challenge( $code_verifier );
+
+		set_transient( $this->pkce_transient_key( $state ), $code_verifier, 10 * MINUTE_IN_SECONDS );
 
 		$params = array(
-			'client_key'    => $this->client_id,
-			'redirect_uri'  => $this->redirect_uri,
-			'scope'         => implode( ',', $this->scopes ),
-			'response_type' => 'code',
-			'state'         => $state,
+			'client_key'             => $this->client_id,
+			'redirect_uri'           => $this->redirect_uri,
+			'scope'                  => implode( ',', $this->scopes ),
+			'response_type'          => 'code',
+			'state'                  => $state,
+			'code_challenge'         => $code_challenge,
+			'code_challenge_method'  => 'S256',
 		);
 
 		return $this->authorization_endpoint . '?' . http_build_query( $params );
 	}
 
 	/**
-	 * Handle OAuth callback
-	 *
-	 * @param string $code Authorization code.
-	 * @param string $state State parameter.
-	 * @return array|WP_Error
+	 * @param string $code  Authorization code.
+	 * @param string $state OAuth state.
+	 * @return array|\WP_Error
 	 */
 	public function handle_callback( $code, $state = '' ) {
-		// State verified in Routes::handle_callback() before this runs.
-
-		// Exchange code for token
-		$token_response = $this->exchange_code_for_token( $code );
+		$token_response = $this->exchange_code_for_token( $code, $state );
 
 		if ( is_wp_error( $token_response ) ) {
 			return $token_response;
 		}
 
-		$access_token = $token_response['access_token'];
+		$access_token = isset( $token_response['access_token'] ) ? (string) $token_response['access_token'] : '';
+		if ( '' === $access_token ) {
+			return new \WP_Error( 'oauth_error', __( 'Access token is missing', '4wp-account' ) );
+		}
 
-		// Get user info
 		$user_info = $this->get_user_info( $access_token );
 
 		if ( is_wp_error( $user_info ) ) {
 			return $user_info;
 		}
 
-		// Create or update user
-		$user_data = array(
-			'id'       => $user_info['open_id'] ?? $user_info['data']['user']['open_id'] ?? '',
-			'email'    => '', // TikTok doesn't provide email by default
-			'username' => $user_info['data']['user']['display_name'] ?? '',
-			'name'     => $user_info['data']['user']['display_name'] ?? '',
-			'avatar'   => $user_info['data']['user']['avatar_url'] ?? '',
-		);
-
-		// Generate email from username if not available
-		if ( empty( $user_data['email'] ) ) {
-			$user_data['email'] = $user_data['username'] . '@tiktok.local';
+		$open_id = (string) ( $user_info['open_id'] ?? '' );
+		if ( '' === $open_id ) {
+			return new \WP_Error( 'oauth_error', __( 'TikTok did not return a user id', '4wp-account' ) );
 		}
+
+		$username = (string) ( $user_info['username'] ?? $user_info['display_name'] ?? '' );
+		$name     = (string) ( $user_info['display_name'] ?? $username );
+
+		$user_data = array(
+			'id'       => $open_id,
+			'email'    => $this->placeholder_email( $open_id ),
+			'username' => '' !== $username ? $username : ( 'tiktok_' . substr( sanitize_key( $open_id ), 0, 12 ) ),
+			'name'     => $name,
+			'avatar'   => (string) ( $user_info['avatar_url'] ?? '' ),
+		);
 
 		$user_id = $this->create_or_update_user( $user_data );
 
@@ -159,25 +138,32 @@ class TikTok extends BaseProvider {
 	}
 
 	/**
-	 * Exchange authorization code for access token
-	 *
-	 * @param string $code Authorization code.
-	 * @return array|WP_Error
+	 * @param string $code  Authorization code.
+	 * @param string $state OAuth state (for PKCE verifier).
+	 * @return array|\WP_Error
 	 */
-	protected function exchange_code_for_token( $code ) {
+	protected function exchange_code_for_token( $code, $state = '' ) {
+		$body = array(
+			'client_key'    => $this->client_id,
+			'client_secret' => $this->client_secret,
+			'code'          => $code,
+			'grant_type'    => 'authorization_code',
+			'redirect_uri'  => $this->redirect_uri,
+		);
+
+		$verifier = get_transient( $this->pkce_transient_key( (string) $state ) );
+		if ( is_string( $verifier ) && '' !== $verifier ) {
+			$body['code_verifier'] = $verifier;
+			delete_transient( $this->pkce_transient_key( (string) $state ) );
+		}
+
 		$response = wp_remote_post(
 			$this->token_endpoint,
 			array(
 				'headers' => array(
 					'Content-Type' => 'application/x-www-form-urlencoded',
 				),
-				'body'    => array(
-					'client_key'    => $this->client_id,
-					'client_secret' => $this->client_secret,
-					'code'          => $code,
-					'grant_type'    => 'authorization_code',
-					'redirect_uri'  => $this->redirect_uri,
-				),
+				'body'    => $body,
 			)
 		);
 
@@ -185,33 +171,44 @@ class TikTok extends BaseProvider {
 			return $response;
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
-
-		if ( isset( $body['error'] ) ) {
-			return new \WP_Error( 'oauth_error', $body['error_description'] ?? $body['error']['message'] ?? 'OAuth error' );
+		$decoded = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $decoded ) ) {
+			return new \WP_Error( 'oauth_error', __( 'Invalid token response from TikTok', '4wp-account' ) );
 		}
 
-		return $body['data'] ?? $body;
+		if ( ! empty( $decoded['error'] ) && 'ok' !== ( $decoded['error']['code'] ?? $decoded['error'] ) ) {
+			$message = is_array( $decoded['error'] )
+				? (string) ( $decoded['error']['message'] ?? $decoded['error']['code'] ?? 'OAuth error' )
+				: (string) ( $decoded['error_description'] ?? $decoded['error'] );
+			return new \WP_Error( 'oauth_error', $message );
+		}
+
+		$data = isset( $decoded['data'] ) && is_array( $decoded['data'] ) ? $decoded['data'] : $decoded;
+
+		if ( empty( $data['access_token'] ) ) {
+			return new \WP_Error( 'oauth_error', __( 'Access token is missing', '4wp-account' ) );
+		}
+
+		return $data;
 	}
 
 	/**
-	 * Get user info from provider
-	 *
 	 * @param string $access_token Access token.
-	 * @return array|WP_Error
+	 * @return array|\WP_Error
 	 */
 	protected function get_user_info( $access_token ) {
-		$response = wp_remote_post(
-			$this->user_info_endpoint,
+		$url = add_query_arg(
+			array(
+				'fields' => 'open_id,union_id,avatar_url,display_name,username',
+			),
+			$this->user_info_endpoint
+		);
+
+		$response = wp_remote_get(
+			$url,
 			array(
 				'headers' => array(
 					'Authorization' => 'Bearer ' . $access_token,
-					'Content-Type'  => 'application/json',
-				),
-				'body'    => wp_json_encode(
-					array(
-						'fields' => array( 'open_id', 'union_id', 'avatar_url', 'display_name', 'username' ),
-					)
 				),
 			)
 		);
@@ -220,21 +217,70 @@ class TikTok extends BaseProvider {
 			return $response;
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
-
-		if ( isset( $body['error'] ) ) {
-			return new \WP_Error( 'api_error', $body['error']['message'] ?? 'Unknown error' );
+		$decoded = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $decoded ) ) {
+			return new \WP_Error( 'api_error', __( 'Invalid user response from TikTok', '4wp-account' ) );
 		}
 
-		return $body;
+		$error_code = is_array( $decoded['error'] ?? null ) ? (string) ( $decoded['error']['code'] ?? '' ) : '';
+		if ( '' !== $error_code && 'ok' !== $error_code ) {
+			return new \WP_Error( 'api_error', (string) ( $decoded['error']['message'] ?? $error_code ) );
+		}
+
+		$user = array();
+		if ( isset( $decoded['data']['user'] ) && is_array( $decoded['data']['user'] ) ) {
+			$user = $decoded['data']['user'];
+		} elseif ( isset( $decoded['data'] ) && is_array( $decoded['data'] ) ) {
+			$user = $decoded['data'];
+		}
+
+		if ( empty( $user['open_id'] ) ) {
+			return new \WP_Error( 'api_error', __( 'TikTok did not return a user id', '4wp-account' ) );
+		}
+
+		return $user;
 	}
 
 	/**
-	 * Get redirect URI
-	 *
 	 * @return string
 	 */
 	protected function get_redirect_uri() {
 		return OAuthUrls::callback_url( $this->provider_id );
+	}
+
+	/**
+	 * TikTok does not return email on user.info.basic — keep a stable unique address.
+	 *
+	 * @param string $open_id TikTok open_id.
+	 */
+	private function placeholder_email( string $open_id ): string {
+		$host = wp_parse_url( home_url(), PHP_URL_HOST );
+		$host = is_string( $host ) && '' !== $host ? $host : 'example.com';
+		$hash = substr( md5( $open_id ), 0, 16 );
+
+		return 'tiktok-' . $hash . '@' . $host;
+	}
+
+	/**
+	 * @return string
+	 */
+	private function create_code_verifier(): string {
+		return wp_generate_password( 64, false, false );
+	}
+
+	/**
+	 * @param string $verifier PKCE verifier.
+	 */
+	private function code_challenge( string $verifier ): string {
+		$hash = hash( 'sha256', $verifier, true );
+
+		return rtrim( strtr( base64_encode( $hash ), '+/', '-_' ), '=' );
+	}
+
+	/**
+	 * @param string $state OAuth state.
+	 */
+	private function pkce_transient_key( string $state ): string {
+		return 'forwp_account_tiktok_pkce_' . md5( $state );
 	}
 }

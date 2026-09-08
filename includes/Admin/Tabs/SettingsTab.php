@@ -9,6 +9,7 @@ namespace ForWP\Account\Admin\Tabs;
 
 use ForWP\Account\Account\AccountMenu;
 use ForWP\Account\Admin\Tabs\AccountMenuTab;
+use ForWP\Account\Auth\WpLoginGate;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,7 +31,7 @@ class SettingsTab {
 		return array(
 			self::SUB_PAGES        => __( 'Pages', '4wp-account' ),
 			self::SUB_ACCOUNT_MENU => __( 'Account Menu', '4wp-account' ),
-			self::SUB_BLOCKS       => __( 'Blocks', '4wp-account' ),
+			self::SUB_BLOCKS       => __( 'Blocks / Shortcodes', '4wp-account' ),
 		);
 	}
 
@@ -85,14 +86,25 @@ class SettingsTab {
 	 * Pages: account page selector.
 	 */
 	private static function render_pages_section(): void {
-		$page_id  = AccountMenu::get_account_page_id();
-		$pages    = get_pages(
+		$page_id       = AccountMenu::get_account_page_id();
+		$pages         = get_pages(
 			array(
 				'sort_column' => 'post_title',
 				'sort_order'  => 'ASC',
 			)
 		);
-		$page_url = AccountMenu::get_account_page_url();
+		$page_url      = AccountMenu::get_account_page_url();
+		$hide_toolbar  = get_option( 'forwp_account_hide_toolbar_subscribers', '0' );
+		$redirect_url  = get_option( 'forwp_account_subscriber_redirect_url', '' );
+		$replace_login = get_option( WpLoginGate::OPTION, '0' );
+		$has_entry     = WpLoginGate::page_has_auth_entry( $page_id );
+		$marker        = '';
+		if ( $page_id > 0 ) {
+			$page = get_post( $page_id );
+			if ( $page instanceof \WP_Post ) {
+				$marker = WpLoginGate::detect_auth_marker( $page );
+			}
+		}
 		?>
 		<h3><?php esc_html_e( 'Account page', '4wp-account' ); ?></h3>
 		<p class="description">
@@ -118,9 +130,53 @@ class SettingsTab {
 							<a href="<?php echo esc_url( $page_url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $page_url ); ?></a>
 						</p>
 					<?php endif; ?>
+					<?php if ( $page_id > 0 && $has_entry ) : ?>
+						<p class="description"><?php echo esc_html( sprintf( /* translators: %s: block or shortcode found */ __( 'Sign-in form found: %s', '4wp-account' ), $marker ) ); ?></p>
+					<?php elseif ( $page_id > 0 ) : ?>
+						<p class="description">
+							<?php esc_html_e( 'This page has no Account block or login shortcode yet. Add forwp/account or [forwp_account] before replacing wp-login.php.', '4wp-account' ); ?>
+							<a href="<?php echo esc_url( self::subtab_url( self::SUB_BLOCKS ) ); ?>"><?php esc_html_e( 'Blocks / Shortcodes', '4wp-account' ); ?></a>
+						</p>
+					<?php endif; ?>
 				</td>
 			</tr>
 		</table>
+
+		<div class="forwp-account-card">
+			<h3 class="forwp-account-section-title"><?php esc_html_e( 'WordPress login', '4wp-account' ); ?></h3>
+			<p class="forwp-account-muted"><?php esc_html_e( 'Send wp-login.php visitors to the account page. This stays off unless that page is published and already contains a login block or shortcode — so the default login is never removed without a replacement.', '4wp-account' ); ?></p>
+			<div class="forwp-account-field">
+				<label class="forwp-account-toggle-row<?php echo $has_entry ? '' : ' is-disabled'; ?>">
+					<input
+						type="checkbox"
+						name="forwp_account_replace_wp_login"
+						value="1"
+						<?php checked( '1' === $replace_login && $has_entry ); ?>
+						<?php disabled( ! $has_entry ); ?>
+					/>
+					<span><?php esc_html_e( 'Use the account page instead of wp-login.php', '4wp-account' ); ?></span>
+				</label>
+				<?php if ( ! $has_entry ) : ?>
+					<p class="forwp-account-field__help"><?php esc_html_e( 'Choose a page above, put the Account block or [forwp_account] on it, save, then this option becomes available. Logout and password-reset links on wp-login.php stay intact.', '4wp-account' ); ?></p>
+				<?php endif; ?>
+			</div>
+		</div>
+
+		<div class="forwp-account-card">
+			<h3 class="forwp-account-section-title"><?php esc_html_e( 'Behavior', '4wp-account' ); ?></h3>
+			<div class="forwp-account-field">
+				<span class="forwp-account-field__label"><?php esc_html_e( 'WordPress toolbar', '4wp-account' ); ?></span>
+				<label class="forwp-account-toggle-row">
+					<input type="checkbox" name="forwp_account_hide_toolbar_subscribers" value="1" <?php checked( $hide_toolbar, '1' ); ?> />
+					<span><?php esc_html_e( 'Hide admin bar for subscribers', '4wp-account' ); ?></span>
+				</label>
+			</div>
+			<div class="forwp-account-field">
+				<label class="forwp-account-field__label" for="forwp_account_subscriber_redirect_url"><?php esc_html_e( 'Redirect after login', '4wp-account' ); ?></label>
+				<input type="text" class="regular-text" id="forwp_account_subscriber_redirect_url" name="forwp_account_subscriber_redirect_url" value="<?php echo esc_attr( $redirect_url ); ?>" placeholder="/my-account" />
+				<p class="forwp-account-field__help"><?php esc_html_e( 'Where subscribers land when visiting /wp-admin/. Leave empty to disable.', '4wp-account' ); ?></p>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -129,6 +185,43 @@ class SettingsTab {
 	 */
 	private static function render_blocks_section(): void {
 		?>
+		<div class="forwp-account-intro-card">
+			<h2 class="forwp-account-intro-card__title"><?php esc_html_e( 'Documentation / Blocks / Shortcodes', '4wp-account' ); ?></h2>
+			<p class="forwp-account-intro-card__text"><?php esc_html_e( 'Place these on pages or in the Site Editor. Sign-in methods are configured under Auth / Register.', '4wp-account' ); ?></p>
+		</div>
+
+		<table class="widefat striped forwp-account-ref-table">
+			<thead>
+				<tr>
+					<th scope="col"><?php esc_html_e( 'Use case', '4wp-account' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Block', '4wp-account' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Shortcode', '4wp-account' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><?php esc_html_e( 'Account page (sign-in or cabinet)', '4wp-account' ); ?></td>
+					<td><code>forwp/account</code></td>
+					<td><code>[forwp_account]</code></td>
+				</tr>
+				<tr>
+					<td><?php esc_html_e( 'Header icon with account dropdown', '4wp-account' ); ?></td>
+					<td><code>forwp/account-menu</code></td>
+					<td><code>[forwp_account_menu]</code></td>
+				</tr>
+				<tr>
+					<td><?php esc_html_e( 'Sign-in buttons', '4wp-account' ); ?></td>
+					<td><code>forwp/auth-buttons</code></td>
+					<td><code>[forwp_account_signin_buttons providers="gmail,github"]</code></td>
+				</tr>
+				<tr>
+					<td><?php esc_html_e( 'Single provider button', '4wp-account' ); ?></td>
+					<td>—</td>
+					<td><code>[forwp_account_login provider="gmail"]</code></td>
+				</tr>
+			</tbody>
+		</table>
+
 		<h3><?php esc_html_e( 'Auth block', '4wp-account' ); ?></h3>
 		<p class="description">
 			<?php esc_html_e( 'Sign-in buttons and OAuth flows.', '4wp-account' ); ?>
@@ -207,7 +300,16 @@ class SettingsTab {
 	 */
 	public static function save( array $post ): void {
 		if ( isset( $post['forwp_account_page_id'] ) ) {
-			AccountMenu::set_account_page_id( absint( $post['forwp_account_page_id'] ) );
+			$page_id = absint( $post['forwp_account_page_id'] );
+			AccountMenu::set_account_page_id( $page_id );
+
+			update_option( 'forwp_account_hide_toolbar_subscribers', ! empty( $post['forwp_account_hide_toolbar_subscribers'] ) ? '1' : '0' );
+
+			if ( isset( $post['forwp_account_subscriber_redirect_url'] ) ) {
+				update_option( 'forwp_account_subscriber_redirect_url', sanitize_text_field( $post['forwp_account_subscriber_redirect_url'] ) );
+			}
+
+			WpLoginGate::set_enabled( ! empty( $post['forwp_account_replace_wp_login'] ), $page_id );
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing

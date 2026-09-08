@@ -94,6 +94,28 @@ class Menu {
 				true
 			);
 		}
+
+		if ( SettingsPage::TAB_APPEARANCE === $tab ) {
+			wp_enqueue_style(
+				'forwp-account',
+				FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/account.css',
+				array(),
+				FORWP_ACCOUNT_VERSION
+			);
+			wp_enqueue_style(
+				'forwp-account-signin',
+				FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/auth.css',
+				array(),
+				FORWP_ACCOUNT_VERSION
+			);
+			wp_enqueue_script(
+				'forwp-account-admin-appearance',
+				FORWP_ACCOUNT_PLUGIN_URL . 'assets/js/admin-appearance.js',
+				array(),
+				FORWP_ACCOUNT_VERSION,
+				true
+			);
+		}
 	}
 
 	/**

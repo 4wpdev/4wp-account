@@ -3,72 +3,209 @@
  */
 
 .forwp-account-signin-btn {
-    display: inline-block;
-    padding: 10px 20px;
-    margin: 5px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    text-align: center;
-    text-decoration: none;
-    transition: all 0.3s ease;
+	align-items: center;
+	background-color: #fff;
+	border: 1px solid #dadce0;
+	border-radius: min(var(--forwp-account-radius, 8px), 24px);
+	box-sizing: border-box;
+	color: #1f1f1f;
+	cursor: pointer;
+	display: inline-flex;
+	font-size: 14px;
+	font-weight: 500;
+	gap: 10px;
+	justify-content: center;
+	line-height: 1.2;
+	margin: 0;
+	padding: 10px 16px;
+	text-align: center;
+	text-decoration: none;
+	transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .forwp-account-signin-btn:hover {
-    background-color: #f5f5f5;
-    border-color: #bbb;
+	background-color: #f8f9fa;
+	border-color: #c6c6c6;
+	color: #1f1f1f;
 }
 
-.forwp-account-signin-btn[data-provider="gmail"] {
-    background-color: #4285f4;
-    color: #fff;
-    border-color: #4285f4;
+.forwp-account-signin-btn__icon {
+	align-items: center;
+	display: inline-flex;
+	flex-shrink: 0;
+	height: 18px;
+	justify-content: center;
+	width: 18px;
 }
 
-.forwp-account-signin-btn[data-provider="gmail"]:hover {
-    background-color: #357ae8;
+.forwp-account-signin-btn__icon svg {
+	display: block;
+	height: 18px;
+	width: 18px;
 }
 
-.forwp-account-signin-btn[data-provider="facebook"] {
-    background-color: #1877f2;
-    color: #fff;
-    border-color: #1877f2;
+.forwp-account-signin-btn__icon--brand {
+	display: inline-flex;
 }
 
-.forwp-account-signin-btn[data-provider="facebook"]:hover {
-    background-color: #166fe5;
+.forwp-account-signin-btn[data-provider="gmail"] .forwp-account-signin-btn__icon--mono {
+	display: none;
 }
 
-.forwp-account-signin-btn[data-provider="github"] {
-    background-color: #24292f;
-    color: #fff;
-    border-color: #24292f;
+.forwp-account-signin--style-solid .forwp-account-signin-btn__icon--brand {
+	display: none;
 }
 
-.forwp-account-signin-btn[data-provider="github"]:hover {
-    background-color: #1b1f24;
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="gmail"] .forwp-account-signin-btn__icon--mono {
+	display: inline-flex;
 }
 
-.forwp-account-signin-btn[data-provider="tiktok"] {
-    background-color: #000;
-    color: #fff;
-    border-color: #000;
+.forwp-account-signin--style-native .forwp-account-signin-btn__icon--brand {
+	display: inline-flex;
 }
 
-.forwp-account-signin-btn[data-provider="tiktok"]:hover {
-    background-color: #333;
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="gmail"] .forwp-account-signin-btn__icon--mono {
+	display: none;
+}
+
+/* Native: official light Google, brand fills for the rest. */
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="gmail"] {
+	background-color: #fff;
+	border-color: #dadce0;
+	color: #1f1f1f;
+}
+
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="gmail"]:hover {
+	background-color: #f8f9fa;
+	box-shadow: 0 1px 2px rgba(60, 64, 67, 0.15);
+}
+
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="github"],
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="tiktok"],
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="x"] {
+	background-color: #24292f;
+	border-color: #24292f;
+	color: #fff;
+}
+
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="github"]:hover,
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="tiktok"]:hover,
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="x"]:hover {
+	background-color: #1b1f24;
+	border-color: #1b1f24;
+	color: #fff;
+}
+
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="facebook"] {
+	background-color: #1877f2;
+	border-color: #1877f2;
+	color: #fff;
+}
+
+.forwp-account-signin--style-native .forwp-account-signin-btn[data-provider="facebook"]:hover {
+	background-color: #166fe5;
+	border-color: #166fe5;
+	color: #fff;
+}
+
+/* Solid fills (Google blue instead of the official white button). */
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="gmail"] {
+	background-color: #4285f4;
+	border-color: #4285f4;
+	color: #fff;
+}
+
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="gmail"]:hover {
+	background-color: #357ae8;
+	border-color: #357ae8;
+	color: #fff;
+}
+
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="facebook"] {
+	background-color: #1877f2;
+	border-color: #1877f2;
+	color: #fff;
+}
+
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="facebook"]:hover {
+	background-color: #166fe5;
+	border-color: #166fe5;
+	color: #fff;
+}
+
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="github"],
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="tiktok"],
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="x"] {
+	background-color: #24292f;
+	border-color: #24292f;
+	color: #fff;
+}
+
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="github"]:hover,
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="tiktok"]:hover,
+.forwp-account-signin--style-solid .forwp-account-signin-btn[data-provider="x"]:hover {
+	background-color: #1b1f24;
+	border-color: #1b1f24;
+	color: #fff;
+}
+
+/* Icon-only row. */
+.forwp-account-signin--style-icons {
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 10px;
+	justify-content: center;
+}
+
+.forwp-account-signin--style-icons .forwp-account-signin-btn {
+	height: 44px;
+	padding: 0;
+	width: 44px;
+}
+
+.forwp-account-signin--style-icons .forwp-account-signin-btn__label {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+}
+
+.forwp-account-signin--style-icons .forwp-account-signin-btn[data-provider="gmail"] {
+	background-color: #fff;
+	border-color: #dadce0;
+	color: #1f1f1f;
+}
+
+.forwp-account-signin--style-icons .forwp-account-signin-btn[data-provider="facebook"] {
+	background-color: #1877f2;
+	border-color: #1877f2;
+	color: #fff;
+}
+
+.forwp-account-signin--style-icons .forwp-account-signin-btn[data-provider="github"],
+.forwp-account-signin--style-icons .forwp-account-signin-btn[data-provider="tiktok"],
+.forwp-account-signin--style-icons .forwp-account-signin-btn[data-provider="x"] {
+	background-color: #24292f;
+	border-color: #24292f;
+	color: #fff;
 }
 
 .forwp-account-signin {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 20px 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 20px 0;
 }
 
+.forwp-account-signin--woocommerce {
+	flex-direction: column;
+	margin: 20px 0;
+}
 
-
-
-
+.forwp-account-signin--woocommerce .forwp-account-signin-btn {
+	width: 100%;
+}

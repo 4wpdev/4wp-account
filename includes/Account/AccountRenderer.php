@@ -7,7 +7,9 @@
 
 namespace ForWP\Account\Account;
 
+use ForWP\Account\Auth\PasswordAuth;
 use ForWP\Account\Auth\ProviderSettings;
+use ForWP\Account\Auth\SocialButtons;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,36 +32,40 @@ class AccountRenderer {
 	}
 
 	/**
-	 * Guest: Google / social sign-in.
+	 * Guest: email/password form and/or social sign-in.
 	 */
 	public static function render_guest(): string {
 		self::persist_redirect_target_from_request();
 
-		$providers = ProviderSettings::get_enabled_for_display();
-		$lead      = self::get_guest_lead_text( $providers );
+		$providers     = ProviderSettings::get_enabled_for_display();
+		$password_form = PasswordAuth::is_enabled();
+		$lead          = self::get_guest_lead_text( $providers, $password_form );
+		$title         = self::get_guest_title( $password_form );
 
 		ob_start();
 		?>
 		<div class="forwp-account forwp-account--guest">
 			<div class="forwp-account-guest">
-				<h2 class="forwp-account-guest__title"><?php esc_html_e( 'Sign in to your account', '4wp-account' ); ?></h2>
+				<h2 class="forwp-account-guest__title"><?php echo esc_html( $title ); ?></h2>
 				<p class="forwp-account-guest__lead"><?php echo esc_html( $lead ); ?></p>
 
-				<?php if ( empty( $providers ) ) : ?>
-					<p class="forwp-account-notice forwp-account-notice--warning">
-						<?php esc_html_e( 'Sign-in is not configured yet. Enable Google in 4WP Account → Auth.', '4wp-account' ); ?>
-					</p>
-				<?php else : ?>
-					<div class="forwp-account-signin forwp-account-signin--account">
-						<?php foreach ( $providers as $provider_key => $label ) : ?>
-							<button type="button" class="forwp-account-signin-btn forwp-account-signin-btn-<?php echo esc_attr( $provider_key ); ?>" data-provider="<?php echo esc_attr( $provider_key ); ?>">
-								<?php echo esc_html( $label ); ?>
-							</button>
-						<?php endforeach; ?>
-					</div>
+				<?php self::render_auth_flash_notices(); ?>
+
+				<?php if ( $password_form ) : ?>
+					<?php echo PasswordAuth::render(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php endif; ?>
 
-				<?php self::render_auth_error_notice(); ?>
+				<?php if ( $password_form && ! empty( $providers ) ) : ?>
+					<p class="forwp-account-signin-divider"><span><?php esc_html_e( 'or continue with', '4wp-account' ); ?></span></p>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $providers ) ) : ?>
+					<?php echo SocialButtons::render_list( $providers, array( 'account' => true ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Plugin SVG + escaped labels. ?>
+				<?php elseif ( ! $password_form ) : ?>
+					<p class="forwp-account-notice forwp-account-notice--warning">
+						<?php esc_html_e( 'Sign-in is not configured yet. Enable a method in 4WP Account → Auth / Register.', '4wp-account' ); ?>
+					</p>
+				<?php endif; ?>
 			</div>
 		</div>
 		<?php
@@ -250,31 +256,73 @@ class AccountRenderer {
 	}
 
 	/**
-	 * OAuth error from query string.
+	 * Guest heading follows the active password-form panel.
 	 */
-	private static function render_auth_error_notice(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( empty( $_GET['forwp_account_error'] ) ) {
+	private static function get_guest_title( bool $password_form ): string {
+		if ( ! $password_form ) {
+			return __( 'Sign in to your account', '4wp-account' );
+		}
+
+		$mode = PasswordAuth::current_mode();
+
+		if ( 'register' === $mode ) {
+			return __( 'Create an account', '4wp-account' );
+		}
+
+		if ( 'lostpassword' === $mode ) {
+			return __( 'Reset your password', '4wp-account' );
+		}
+
+		return __( 'Sign in to your account', '4wp-account' );
+	}
+
+	/**
+	 * Error / success flash from query string.
+	 */
+	private static function render_auth_flash_notices(): void {
+		self::render_query_notice( 'forwp_account_error', 'error' );
+		self::render_query_notice( 'forwp_account_notice', 'success' );
+	}
+
+	/**
+	 * @param string $query_key GET key.
+	 * @param string $type      error|success.
+	 */
+	private static function render_query_notice( string $query_key, string $type ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Auth flash from redirect URL.
+		if ( empty( $_GET[ $query_key ] ) ) {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth error flash from redirect URL.
-		$raw_error = isset( $_GET['forwp_account_error'] ) ? wp_unslash( (string) $_GET['forwp_account_error'] ) : '';
-		$message   = sanitize_text_field( urldecode( $raw_error ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Auth flash from redirect URL.
+		$raw     = wp_unslash( (string) $_GET[ $query_key ] );
+		$message = sanitize_text_field( urldecode( $raw ) );
 		if ( $message === '' ) {
 			return;
 		}
 
+		$class = 'success' === $type ? 'forwp-account-notice--success' : 'forwp-account-notice--error';
+
 		printf(
-			'<p class="forwp-account-notice forwp-account-notice--error" role="alert">%s</p>',
+			'<p class="forwp-account-notice %s" role="alert">%s</p>',
+			esc_attr( $class ),
 			esc_html( $message )
 		);
 	}
 
 	/**
-	 * @param array<string, string> $providers Enabled provider buttons.
+	 * @param array<string, string> $providers     Enabled provider buttons.
+	 * @param bool                  $password_form Whether the email form is on.
 	 */
-	private static function get_guest_lead_text( array $providers ): string {
+	private static function get_guest_lead_text( array $providers, bool $password_form ): string {
+		if ( $password_form && ! empty( $providers ) ) {
+			return __( 'Sign in with email or a social account to access courses, orders, and saved items.', '4wp-account' );
+		}
+
+		if ( $password_form ) {
+			return __( 'Use your email and password to access courses, orders, and saved items.', '4wp-account' );
+		}
+
 		$names = array();
 
 		foreach ( array_keys( $providers ) as $provider_id ) {
@@ -348,22 +396,6 @@ class AccountRenderer {
 			return;
 		}
 
-		$redirect_to = wp_validate_redirect( sanitize_text_field( wp_unslash( (string) $_GET['redirect_to'] ) ), '' );
-		if ( '' === $redirect_to ) {
-			return;
-		}
-
-		$path = defined( 'COOKIEPATH' ) ? COOKIEPATH : '/';
-		$domain = defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '';
-
-		setcookie(
-			'forwp_account_redirect_to',
-			rawurlencode( $redirect_to ),
-			time() + 600,
-			$path,
-			$domain,
-			is_ssl(),
-			true
-		);
+		\ForWP\Account\Auth\OAuthRedirect::persist_cookie( (string) wp_unslash( $_GET['redirect_to'] ) );
 	}
 }

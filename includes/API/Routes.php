@@ -7,6 +7,7 @@
 
 namespace ForWP\Account\API;
 
+use ForWP\Account\Auth\OAuthRedirect;
 use ForWP\Account\Auth\OAuthState;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -149,48 +150,10 @@ class Routes {
 			return $this->redirect_with_error( $result->get_error_message() );
 		}
 
-		$redirect_url = apply_filters( 'forwp_account_redirect_url', home_url() );
-		$redirect_url = self::resolve_post_login_redirect( $redirect_url );
+		$redirect_url = apply_filters( 'forwp_account_redirect_url', home_url( '/' ) );
+		$redirect_url = OAuthRedirect::consume_cookie( $redirect_url );
 
-		return $this->redirect_response( $redirect_url );
-	}
-
-	/**
-	 * Use redirect target saved before OAuth when available.
-	 *
-	 * @param string $default_url Default redirect URL.
-	 * @return string
-	 */
-	private static function resolve_post_login_redirect( string $default_url ): string {
-		if ( ! isset( $_COOKIE['forwp_account_redirect_to'] ) ) {
-			return $default_url;
-		}
-
-		$cookie_value = sanitize_text_field( wp_unslash( (string) $_COOKIE['forwp_account_redirect_to'] ) );
-		if ( $cookie_value === '' ) {
-			return $default_url;
-		}
-
-		$redirect_to = wp_validate_redirect( rawurldecode( $cookie_value ), '' );
-
-		$path   = defined( 'COOKIEPATH' ) ? COOKIEPATH : '/';
-		$domain = defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '';
-		setcookie( 'forwp_account_redirect_to', '', time() - HOUR_IN_SECONDS, $path, $domain, is_ssl(), true );
-
-		return $redirect_to !== '' ? $redirect_to : $default_url;
-	}
-
-	/**
-	 * Build a REST redirect response (never call wp_redirect inside REST callbacks).
-	 *
-	 * @param string $redirect_url Target URL.
-	 * @return \WP_REST_Response
-	 */
-	private function redirect_response( string $redirect_url ): \WP_REST_Response {
-		$response = new \WP_REST_Response( null, 302 );
-		$response->header( 'Location', wp_sanitize_redirect( $redirect_url ) );
-
-		return $response;
+		return OAuthRedirect::rest_response( $redirect_url );
 	}
 
 	/**
@@ -207,6 +170,6 @@ class Routes {
 			\ForWP\Account\Account\AccountMenu::get_account_page_url()
 		);
 
-		return $this->redirect_response( $redirect_url );
+		return OAuthRedirect::rest_response( $redirect_url );
 	}
 }

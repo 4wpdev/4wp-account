@@ -16,10 +16,12 @@
 
 /* Guest sign-in */
 .forwp-account--guest {
+	max-width: 560px;
+	margin: 0 auto;
 	padding: 2rem 1.5rem;
-	border: 1px solid var(--wp--preset--color--contrast-3, #ddd);
-	border-radius: 8px;
-	background: var(--wp--preset--color--base, #fff);
+	border: var(--forwp-account-border-width, 1px) solid var(--forwp-account-border, var(--wp--preset--color--contrast-3, #ddd));
+	border-radius: var(--forwp-account-radius, 8px);
+	background: var(--forwp-account-bg, var(--wp--preset--color--base, #fff));
 }
 
 .forwp-account-guest__title {
@@ -36,12 +38,21 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
-	max-width: 320px;
+	max-width: none;
+}
+
+.forwp-account-signin--account.forwp-account-signin--style-icons {
+	flex-direction: row;
+	justify-content: center;
 }
 
 .forwp-account-signin--account .forwp-account-signin-btn {
 	width: 100%;
 	margin: 0;
+}
+
+.forwp-account-signin--account.forwp-account-signin--style-icons .forwp-account-signin-btn {
+	width: 44px;
 }
 
 .forwp-account-notice {
@@ -60,6 +71,114 @@
 	background: #fff8e5;
 	color: #6b5500;
 	border: 1px solid #ffe08a;
+}
+
+.forwp-account-notice--success {
+	background: #edfaef;
+	color: #1e4620;
+	border: 1px solid #c3e6cb;
+}
+
+.forwp-account-notice--error,
+.forwp-account-notice--success,
+.forwp-account-notice--warning {
+	margin: 0 0 1.25rem;
+}
+
+/* Email / password */
+.forwp-account-password {
+	max-width: none;
+}
+
+.forwp-account-password-form {
+	margin: 0;
+}
+
+.forwp-account-password-fields {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.85rem;
+	margin: 0 0 0.85rem;
+}
+
+.forwp-account-password-fields .forwp-account-password-field {
+	margin: 0;
+}
+
+.forwp-account-password-form > .forwp-account-password-field {
+	margin-bottom: 0.85rem;
+}
+
+@media (max-width: 600px) {
+	.forwp-account-password-fields {
+		grid-template-columns: 1fr;
+	}
+}
+
+.forwp-account-password-field label {
+	display: block;
+	margin-bottom: 0.35rem;
+	font-weight: 600;
+}
+
+.forwp-account-password-field input[type="text"],
+.forwp-account-password-field input[type="email"],
+.forwp-account-password-field input[type="password"] {
+	width: 100%;
+	padding: 0.6rem 0.75rem;
+	border: var(--forwp-account-border-width, 1px) solid var(--forwp-account-border, var(--wp--preset--color--contrast-3, #ddd));
+	border-radius: var(--forwp-account-radius, 6px);
+	background: var(--forwp-account-bg, var(--wp--preset--color--base, #fff));
+	color: inherit;
+	font: inherit;
+}
+
+.forwp-account-password-row {
+	margin: 0 0 1rem;
+}
+
+.forwp-account-password-remember {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.9rem;
+}
+
+.forwp-account-password-actions {
+	margin: 0;
+}
+
+.forwp-account-password-submit {
+	width: 100%;
+}
+
+.forwp-account-password-links {
+	margin: 0.75rem 0 0;
+	font-size: 0.875rem;
+}
+
+.forwp-account-password-links a {
+	color: inherit;
+}
+
+.forwp-account-signin-divider {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	max-width: none;
+	margin: 1.25rem 0;
+	color: var(--wp--preset--color--contrast-2, #666);
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.forwp-account-signin-divider::before,
+.forwp-account-signin-divider::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--wp--preset--color--contrast-3, #ddd);
 }
 
 /* Logged-in layout */

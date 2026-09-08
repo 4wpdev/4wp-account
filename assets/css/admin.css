@@ -1,72 +1,455 @@
-.forwp-account-admin .forwp-account-panel {
-	margin-top: 1.5em;
-	max-width: 960px;
+/**
+ * 4WP Account admin — aligned with 4WP Notifications / Drive shell.
+ */
+
+.forwp-account-admin-shell {
+	max-width: 1100px;
 }
 
-.forwp-account-notice {
-	border-left: 4px solid #c3c4c7;
-	background: #f6f7f7;
-	padding: 12px 16px;
-	margin: 1em 0;
+.forwp-account-admin-shell h1.forwp-account-admin-heading {
+	align-items: center;
+	display: flex;
+	font-size: 1.6rem;
+	font-weight: 600;
+	gap: 10px;
+	margin-bottom: 0.25rem;
 }
 
-.forwp-account-notice--soon {
-	border-left-color: #dba617;
-	background: #fcf9e8;
+.forwp-account-admin-heading__icon {
+	align-items: center;
+	color: var(--wp-admin-theme-color, #3858e9);
+	display: inline-flex;
+	flex-shrink: 0;
+	justify-content: center;
+	line-height: 0;
 }
 
-.forwp-account-notice--info {
-	border-left-color: #2271b1;
-	background: #f0f6fc;
+.forwp-account-admin-heading__icon svg {
+	display: block;
 }
 
-.forwp-account-list {
-	list-style: disc;
-	margin-left: 1.5em;
+.forwp-account-admin-lead {
+	color: #646970;
+	font-size: 13px;
+	line-height: 1.5;
+	margin: 0 0 16px;
+	max-width: 72ch;
 }
 
-.forwp-account-subtabs {
-	margin-top: 1em;
+.forwp-account-admin-app {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+	overflow: hidden;
+}
+
+.forwp-account-tab-panel__tabs {
+	align-items: stretch;
+	background: #fafafa;
+	border-bottom: 1px solid #e0e0e0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+	margin: 0;
+	padding: 0;
+}
+
+.forwp-account-tab {
+	background: transparent;
+	border: 1px solid transparent;
+	border-bottom: none;
+	border-radius: 0;
+	box-shadow: none;
+	color: #1d2327;
+	display: inline-flex;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	margin: 0;
+	padding: 10px 14px;
+	text-decoration: none;
+}
+
+.forwp-account-tab:hover,
+.forwp-account-tab:focus {
+	background: #fff;
+	color: #1d2327;
+}
+
+.forwp-account-tab.is-active {
+	background: #fff;
+	border-color: #e0e0e0 #e0e0e0 #fff;
+	margin-bottom: -1px;
+	position: relative;
+	z-index: 1;
+}
+
+.forwp-account-tab-panel__content {
+	padding: 18px 20px 24px;
+}
+
+.forwp-account-intro-card {
+	background: #fafafa;
+	border: 1px dashed #c3c4c7;
+	border-radius: 8px;
+	margin-bottom: 16px;
+	padding: 16px 20px;
+}
+
+.forwp-account-intro-card__title {
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin: 0 0 8px;
+}
+
+.forwp-account-intro-card__text {
+	color: #2c3338;
+	font-size: 14px;
+	line-height: 1.55;
+	margin: 0;
+	max-width: 72ch;
+}
+
+.forwp-account-card {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	margin-bottom: 16px;
+	padding: 18px 20px;
+}
+
+.forwp-account-card:last-child {
 	margin-bottom: 0;
 }
 
-.forwp-account-provider {
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	padding: 0 16px 8px;
-	margin-bottom: 16px;
-	background: #fff;
+.forwp-account-section-title {
+	font-size: 1.05rem;
+	font-weight: 600;
+	margin: 0 0 12px;
 }
 
-.forwp-account-provider--soon {
-	opacity: 0.85;
-	background: #f6f7f7;
+.forwp-account-muted {
+	color: #646970;
+	font-size: 13px;
+	line-height: 1.5;
+	margin: 8px 0 0;
+	max-width: 72ch;
 }
 
-.forwp-account-provider__head {
-	display: flex;
+.forwp-account-field + .forwp-account-field {
+	margin-top: 16px;
+}
+
+.forwp-account-field__label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 6px;
+}
+
+.forwp-account-field__help,
+.forwp-account-field__links {
+	color: #646970;
+	font-size: 13px;
+	margin: 6px 0 0;
+}
+
+.forwp-account-toggle-row {
 	align-items: center;
+	display: flex;
+	gap: 8px;
+	margin: 0;
+}
+
+.forwp-account-toggle-row.is-disabled {
+	color: #646970;
+	opacity: 0.75;
+}
+
+.forwp-account-form-actions {
+	margin: 20px 0 0;
+}
+
+.forwp-account-form-actions .submit {
+	margin: 0;
+	padding: 0;
+}
+
+.forwp-account-registry-title {
+	margin-top: 8px;
+}
+
+.forwp-account-registry-hint {
+	margin-bottom: 14px !important;
+	margin-top: -4px;
+}
+
+.forwp-account-provider-grid {
+	display: grid;
+	gap: 14px;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	margin: 0 0 16px;
+}
+
+.forwp-account-provider-card {
+	background: #fff;
+	border: 1px solid #e8e8e8;
+	border-radius: 8px;
+	cursor: pointer;
+	outline: none;
+	padding: 12px 14px 10px;
+	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.forwp-account-provider-card:hover {
+	border-color: #c3c4c7;
+}
+
+.forwp-account-provider-card:focus-visible {
+	box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--wp-admin-theme-color, #3858e9);
+}
+
+.forwp-account-provider-card.is-selected {
+	border-color: var(--wp-admin-theme-color, #3858e9);
+	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #3858e9);
+}
+
+.forwp-account-provider-card__head {
+	align-items: flex-start;
+	display: flex;
 	gap: 12px;
+	justify-content: space-between;
+}
+
+.forwp-account-provider-card__label {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.forwp-account-provider-card__slug {
+	font-size: 12px;
+	margin-top: 4px;
+}
+
+.forwp-account-provider-card__slug code {
+	background: transparent;
+	color: #646970;
+	font-size: 11px;
+	padding: 0;
+}
+
+.forwp-account-provider-card__status {
+	border-top: 1px solid #f0f0f1;
+	color: #50575e;
+	font-size: 11.5px;
+	line-height: 1.3;
+	margin: 10px 0 0;
+	padding-top: 8px;
+}
+
+.forwp-account-provider-detail-wrap {
+	margin-bottom: 20px;
+}
+
+.forwp-account-provider-detail-head {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.forwp-account-provider-detail-head__title {
+	margin: 0;
+}
+
+.forwp-account-provider-detail__panel {
+	background: #fcfcfc;
+	border: 1px solid #e8e8e8;
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 18px 20px 22px;
+}
+
+.forwp-account-provider-detail__panel .forwp-account-toggle-row {
+	margin-bottom: 4px;
+}
+
+.forwp-account-provider-detail__panel .regular-text,
+.forwp-account-provider-detail__panel .large-text {
+	max-width: 100%;
+	width: 100%;
+}
+
+.forwp-account-source-grid {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin: 12px 0 0;
+}
+
+@media screen and (max-width: 900px) {
+	.forwp-account-source-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.forwp-account-source-card {
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	padding: 16px;
+}
+
+.forwp-account-source-card--toggle {
+	min-height: 118px;
+}
+
+.forwp-account-credentials-grid {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	margin-top: 12px;
+}
+
+@media screen and (max-width: 900px) {
+	.forwp-account-credentials-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.forwp-account-credentials-grid .regular-text,
+.forwp-account-credentials-grid .large-text {
+	max-width: 100%;
+	width: 100%;
+}
+
+.forwp-account-source-card.is-live {
+	border-color: #c3e6cb;
+}
+
+.forwp-account-source-card.is-planned {
+	background: #fafafa;
+}
+
+.forwp-account-source-card__head {
+	align-items: flex-start;
+	display: flex;
+	gap: 10px;
+	justify-content: space-between;
+	margin-bottom: 8px;
+}
+
+.forwp-account-source-card__title {
+	font-size: 1rem;
+	font-weight: 600;
+	margin: 0;
+}
+
+.forwp-account-source-card__slug {
+	color: #646970;
+	font-size: 12px;
+	margin: 2px 0 0;
+}
+
+.forwp-account-source-card__desc {
+	color: #50575e;
+	font-size: 13px;
+	line-height: 1.5;
+	margin: 0 0 12px;
+}
+
+.forwp-account-source-card__fields .forwp-account-field + .forwp-account-field {
+	margin-top: 12px;
 }
 
 .forwp-account-badge {
-	display: inline-block;
-	font-size: 11px;
-	line-height: 1.4;
-	padding: 2px 8px;
 	border-radius: 999px;
-	background: #f0f0f1;
-	color: #50575e;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 4px 8px;
+	text-transform: uppercase;
+	white-space: nowrap;
 }
 
-.forwp-account-badge--soon {
-	background: #fcf9e8;
-	color: #8a6d00;
+.forwp-account-badge--live {
+	background: #edfaef;
+	color: #1e4620;
+}
+
+.forwp-account-badge--soon,
+.forwp-account-badge--planned {
+	background: #f0f0f1;
+	color: #50575e;
 }
 
 .forwp-account-badge--muted {
 	background: #f0f0f1;
 	color: #646970;
+}
+
+.forwp-account-uri-field {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.forwp-account-uri-field__input {
+	flex: 1 1 220px;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	background: #f6f7f7;
+}
+
+.forwp-account-ref-table code {
+	font-size: 12px;
+}
+
+.forwp-account-admin-list {
+	margin: 12px 0 0;
+	padding-left: 1.2em;
+}
+
+.forwp-account-subnav {
+	align-items: stretch;
+	background: #fafafa;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+	margin: 0 0 16px;
+	overflow: hidden;
+}
+
+.forwp-account-subnav__item {
+	border-right: 1px solid #e0e0e0;
+	color: #1d2327;
+	font-size: 13px;
+	font-weight: 500;
+	padding: 8px 14px;
+	text-decoration: none;
+}
+
+.forwp-account-subnav__item:last-child {
+	border-right: 0;
+}
+
+.forwp-account-subnav__item:hover,
+.forwp-account-subnav__item:focus {
+	background: #fff;
+	color: #1d2327;
+}
+
+.forwp-account-subnav__item.is-active {
+	background: #fff;
+	box-shadow: inset 0 -2px 0 var(--wp-admin-theme-color, #3858e9);
 }
 
 .forwp-account-menu-table .small-text {
@@ -82,51 +465,200 @@
 	vertical-align: middle;
 }
 
-.forwp-account-menu-context {
-	margin-top: 2em;
-	padding-top: 1.5em;
-	border-top: 1px solid #c3c4c7;
+.forwp-account-menu-context + .forwp-account-menu-context {
+	margin-top: 16px;
 }
 
-.forwp-account-menu-context:first-of-type {
-	margin-top: 1em;
-	padding-top: 0;
-	border-top: 0;
-}
-
-.forwp-account-menu-context h4 {
-	margin: 1.5em 0 0.5em;
-}
-
-.forwp-account-social-grid {
+.forwp-account-appearance {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-	gap: 12px 24px;
-	margin: 1em 0 1.5em;
+	gap: 20px;
+	grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+	align-items: start;
 }
 
-.forwp-account-social-grid label {
+@media screen and (max-width: 1100px) {
+	.forwp-account-appearance {
+		grid-template-columns: 1fr;
+	}
+}
+
+.forwp-account-preview__caption {
+	color: #646970;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	margin: 0 0 8px;
+	text-transform: uppercase;
+}
+
+.forwp-account-preview__toolbar {
 	display: flex;
-	align-items: center;
-	gap: 8px;
+	gap: 6px;
+	margin: 0 0 10px;
 }
 
-.forwp-account-uri-field {
+.forwp-account-preview__toolbar .button.is-active {
+	background: #fff;
+	border-color: var(--wp-admin-theme-color, #3858e9);
+	color: var(--wp-admin-theme-color, #3858e9);
+}
+
+.forwp-account-preview__frame {
+	background: #f0f0f1;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	overflow: hidden;
+}
+
+.forwp-account-preview__chrome {
+	align-items: center;
+	background: linear-gradient(#f6f7f7, #f0f0f1);
+	border-bottom: 1px solid #dcdcde;
+	display: flex;
+	gap: 6px;
+	padding: 10px 12px;
+}
+
+.forwp-account-preview__dot {
+	background: #ddd;
+	border-radius: 50%;
+	height: 10px;
+	width: 10px;
+}
+
+.forwp-account-preview__dot:first-child {
+	background: #ff6b6b;
+}
+
+.forwp-account-preview__dot:nth-child(2) {
+	background: #ffd43b;
+}
+
+.forwp-account-preview__dot:nth-child(3) {
+	background: #69db7c;
+}
+
+.forwp-account-preview__chrome-label {
+	color: #50575e;
+	font-size: 12px;
+	font-weight: 600;
+	margin-left: auto;
+}
+
+.forwp-account-preview-stage {
+	padding: 20px 16px 24px;
+}
+
+.forwp-account-preview-stage .forwp-account--guest {
+	max-width: 100%;
+}
+
+.forwp-account-preview-stage.is-narrow {
+	max-width: 360px;
+	margin: 0 auto;
+}
+
+.forwp-account-preview-stage.is-narrow .forwp-account-password-fields {
+	grid-template-columns: 1fr;
+}
+
+.forwp-account-preview-input {
+	background: var(--forwp-account-bg, #fff);
+	border: var(--forwp-account-border-width, 1px) solid var(--forwp-account-border, #ddd);
+	border-radius: min(var(--forwp-account-radius, 8px), 10px);
+	display: block;
+	height: 2.4rem;
+}
+
+.forwp-account-preview-submit {
+	background: #1d2327;
+	border-radius: min(var(--forwp-account-radius, 8px), 8px);
+	color: #fff;
+	cursor: default;
+	display: block;
+	font-size: 14px;
+	padding: 0.65rem 1rem;
+	text-align: center;
+}
+
+.forwp-account-preview-link {
+	color: #2271b1;
+	cursor: default;
+	text-decoration: underline;
+}
+
+.forwp-account-preview-stage .forwp-account-signin-btn {
+	cursor: default;
+}
+
+.forwp-account-choice-set {
+	border: 0;
 	display: flex;
 	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+}
+
+.forwp-account-choice {
+	cursor: pointer;
+	display: inline-flex;
+	margin: 0;
+}
+
+.forwp-account-choice input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.forwp-account-choice span {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	display: inline-block;
+	font-size: 13px;
+	line-height: 2;
+	padding: 0 12px;
+}
+
+.forwp-account-choice input:checked + span {
+	background: #fff;
+	border-color: var(--wp-admin-theme-color, #3858e9);
+	color: var(--wp-admin-theme-color, #3858e9);
+}
+
+.forwp-account-choice input:focus-visible + span {
+	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #3858e9);
+}
+
+.forwp-account-color-row__controls {
 	align-items: center;
+	display: flex;
 	gap: 8px;
-	max-width: 720px;
 }
 
-.forwp-account-uri-field__input {
-	flex: 1 1 420px;
-	font-family: Consolas, Monaco, monospace;
+.forwp-account-color-row__controls input[type="color"] {
+	flex-shrink: 0;
+	height: 30px;
+	padding: 0;
+	width: 42px;
+}
+
+.forwp-account-range-value {
+	color: #646970;
+	display: inline-block;
 	font-size: 12px;
-	background: #f6f7f7;
+	margin-left: 8px;
 }
 
-.forwp-account-oauth-hint {
-	margin-top: 10px;
-	max-width: 720px;
+.forwp-account-appearance-actions {
+	margin: 16px 0 0;
+}
+
+.forwp-account-appearance input[type="range"] {
+	max-width: 240px;
+	vertical-align: middle;
+	width: 70%;
 }

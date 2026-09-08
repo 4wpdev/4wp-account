@@ -7,6 +7,8 @@
 
 namespace ForWP\Account\Account;
 
+use ForWP\Account\Auth\PasswordAuth;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -20,6 +22,9 @@ class AccountPage {
 	 * Bootstrap hooks.
 	 */
 	public static function init(): void {
+		PasswordAuth::init();
+		\ForWP\Account\Auth\WpLoginGate::init();
+
 		add_shortcode( 'forwp_account', array( self::class, 'shortcode_account' ) );
 		add_shortcode( 'forwp_account_link', array( self::class, 'shortcode_account_link' ) );
 		add_shortcode( 'forwp_account_menu', array( self::class, 'shortcode_account_menu' ) );
@@ -211,11 +216,23 @@ class AccountPage {
 		}
 
 		wp_enqueue_style(
-			'forwp-account',
-			FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/account.css',
+			'forwp-account-signin',
+			FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/auth.css',
 			array(),
 			FORWP_ACCOUNT_VERSION
 		);
+
+		wp_enqueue_style(
+			'forwp-account',
+			FORWP_ACCOUNT_PLUGIN_URL . 'assets/css/account.css',
+			array( 'forwp-account-signin' ),
+			FORWP_ACCOUNT_VERSION
+		);
+
+		$css = \ForWP\Account\Auth\Appearance::inline_css();
+		if ( $css !== '' ) {
+			wp_add_inline_style( 'forwp-account', $css );
+		}
 	}
 
 	/**

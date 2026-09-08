@@ -96,6 +96,16 @@ abstract class BaseProvider {
 	 * @return int|WP_Error User ID or error.
 	 */
 	protected function create_or_update_user( $user_data ) {
+		$provider_user_id = isset( $user_data['id'] ) ? (string) $user_data['id'] : '';
+		$by_provider      = $this->find_user_by_provider_id( $provider_user_id );
+
+		if ( $by_provider instanceof \WP_User ) {
+			if ( ! empty( $user_data['avatar'] ) ) {
+				update_user_meta( $by_provider->ID, 'forwp_account_avatar', $user_data['avatar'] );
+			}
+			return $by_provider->ID;
+		}
+
 		$email = $user_data['email'] ?? '';
 
 		if ( empty( $email ) ) {
@@ -136,6 +146,37 @@ abstract class BaseProvider {
 		}
 
 		return $user_id;
+	}
+
+	/**
+	 * Existing WP user linked to this provider account.
+	 *
+	 * @param string $provider_user_id Remote user id.
+	 * @return \WP_User|null
+	 */
+	protected function find_user_by_provider_id( string $provider_user_id ) {
+		if ( '' === $provider_user_id ) {
+			return null;
+		}
+
+		$users = get_users(
+			array(
+				'number'     => 1,
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Lookup by provider id on login.
+					'relation' => 'AND',
+					array(
+						'key'   => 'forwp_account_provider',
+						'value' => $this->provider_id,
+					),
+					array(
+						'key'   => 'forwp_account_provider_id',
+						'value' => $provider_user_id,
+					),
+				),
+			)
+		);
+
+		return isset( $users[0] ) && $users[0] instanceof \WP_User ? $users[0] : null;
 	}
 
 	/**
