@@ -60,11 +60,6 @@
 						'aria-hidden': true,
 					},
 					createElement( 'span', { className: 'forwp-account-menu__icon' }, userIcon )
-				),
-				createElement(
-					'p',
-					{ className: 'forwp-account-menu__hint' },
-					__( 'Account menu dropdown on frontend', '4wp-account' )
 				)
 			);
 		},
