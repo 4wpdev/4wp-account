@@ -103,11 +103,13 @@ class Routes {
 
 		$auth_url = $provider->get_authorization_url();
 
-		return new \WP_REST_Response(
-			[
-				'auth_url' => $auth_url,
-			],
-			200
+		return self::nocache_response(
+			new \WP_REST_Response(
+				[
+					'auth_url' => $auth_url,
+				],
+				200
+			)
 		);
 	}
 
@@ -171,5 +173,19 @@ class Routes {
 		);
 
 		return OAuthRedirect::rest_response( $redirect_url );
+	}
+
+	/**
+	 * OAuth auth URL JSON must not be cached (stale state breaks login).
+	 *
+	 * @param \WP_REST_Response $response REST response.
+	 * @return \WP_REST_Response
+	 */
+	private static function nocache_response( \WP_REST_Response $response ): \WP_REST_Response {
+		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
+		$response->header( 'Pragma', 'no-cache' );
+		$response->header( 'Expires', '0' );
+
+		return $response;
 	}
 }

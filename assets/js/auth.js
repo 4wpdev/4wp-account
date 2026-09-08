@@ -15,11 +15,10 @@
                 return;
             }
 
-            // Get authorization URL
-            const apiUrl = forwpAccountSignin.apiUrl + 'auth/' + provider;
-            console.log('Requesting auth URL from:', apiUrl);
-            
-            fetch(apiUrl)
+            // Get authorization URL (bust caches — stale OAuth state breaks login)
+            const apiUrl = forwpAccountSignin.apiUrl + 'auth/' + provider + '?_=' + Date.now();
+
+            fetch(apiUrl, { cache: 'no-store', credentials: 'same-origin' })
                 .then(response => {
                     console.log('Response status:', response.status);
                     if (!response.ok) {
