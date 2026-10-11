@@ -1,0 +1,31 @@
+# Development-only — omit from WordPress.org ZIP / Plugin Check release bundle.
+# Production Composer packages in vendor/ MUST ship (OAuth clients).
+.git/
+.gitattributes
+.gitignore
+.distignore
+
+.editorconfig
+.phpcs.xml
+.phpcs.xml.dist
+.phpcs.cache
+.phpunit.result.cache
+.phpunit.cache
+
+docs/
+README.md
+.wordpress-org/
+scripts/
+.cursor/
+.backups/
+.DS_Store
+
+tests/
+phpunit.xml
+phpunit.xml.dist
+phpcs.xml
+composer.json
+composer.lock
+
+# Dev-only Composer packages — strip before ZIP (see release commands).
+# Full vendor/ is rebuilt with: composer install --no-dev --optimize-autoloader

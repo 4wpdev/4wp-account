@@ -127,15 +127,21 @@ class AuthTab {
 	private static function render_provider_card( array $provider ): void {
 		$storage_key = (string) ( $provider['storage'] ?? '' );
 		$is_active   = ( 'active' === ( $provider['status'] ?? '' ) );
+		$is_enabled  = $is_active && ProviderSettings::is_enabled( $storage_key );
 		$label       = (string) ( $provider['label'] ?? '' );
 		$blurb       = (string) ( $provider['blurb'] ?? '' );
+		$classes     = 'forwp-account-provider-card';
+		if ( $is_enabled ) {
+			$classes .= ' is-enabled';
+		}
 		?>
 		<div
-			class="forwp-account-provider-card"
+			class="<?php echo esc_attr( $classes ); ?>"
 			role="button"
 			tabindex="0"
 			data-provider="<?php echo esc_attr( $storage_key ); ?>"
 			data-label="<?php echo esc_attr( $label ); ?>"
+			data-enabled="<?php echo $is_enabled ? '1' : '0'; ?>"
 			aria-pressed="false"
 		>
 			<div class="forwp-account-provider-card__head">
@@ -143,11 +149,14 @@ class AuthTab {
 					<div class="forwp-account-provider-card__label"><?php echo esc_html( $label ); ?></div>
 					<div class="forwp-account-provider-card__slug"><code><?php echo esc_html( $storage_key ); ?></code></div>
 				</div>
-				<?php if ( $is_active ) : ?>
-					<span class="forwp-account-badge forwp-account-badge--live"><?php esc_html_e( 'Live', '4wp-account' ); ?></span>
-				<?php else : ?>
-					<span class="forwp-account-badge forwp-account-badge--soon"><?php esc_html_e( 'Coming soon', '4wp-account' ); ?></span>
-				<?php endif; ?>
+				<div class="forwp-account-provider-card__badges">
+					<?php if ( $is_active ) : ?>
+						<span class="forwp-account-badge forwp-account-badge--on" <?php echo $is_enabled ? '' : 'hidden'; ?>><?php esc_html_e( 'On', '4wp-account' ); ?></span>
+						<span class="forwp-account-badge forwp-account-badge--live"><?php esc_html_e( 'Live', '4wp-account' ); ?></span>
+					<?php else : ?>
+						<span class="forwp-account-badge forwp-account-badge--soon"><?php esc_html_e( 'Coming soon', '4wp-account' ); ?></span>
+					<?php endif; ?>
+				</div>
 			</div>
 			<p class="forwp-account-provider-card__status"><?php echo esc_html( $blurb ); ?></p>
 		</div>

@@ -117,6 +117,35 @@
 			back.addEventListener( 'click', showOverview );
 		}
 
+		function setCardEnabled( slug, on ) {
+			const card = document.querySelector( '.forwp-account-provider-card[data-provider="' + slug + '"]' );
+			if ( ! card ) {
+				return;
+			}
+
+			card.classList.toggle( 'is-enabled', on );
+			card.setAttribute( 'data-enabled', on ? '1' : '0' );
+
+			const onBadge = card.querySelector( '.forwp-account-badge--on' );
+			if ( onBadge ) {
+				onBadge.hidden = ! on;
+			}
+		}
+
+		wrap.querySelectorAll( 'input[name^="forwp_account_provider_enabled_"]' ).forEach( function ( input ) {
+			if ( input.type !== 'checkbox' ) {
+				return;
+			}
+
+			input.addEventListener( 'change', function () {
+				const name = input.getAttribute( 'name' ) || '';
+				const slug = name.replace( /^forwp_account_provider_enabled_/, '' );
+				if ( slug ) {
+					setCardEnabled( slug, input.checked );
+				}
+			} );
+		} );
+
 		openProvider( wrap.getAttribute( 'data-open-provider' ) || '' );
 	}
 

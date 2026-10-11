@@ -4,7 +4,7 @@ Tags: membership, user-profile, user-account, user-registration
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -142,11 +142,16 @@ No. Email/password, social login, the account page, and Gutenberg blocks work wi
 
 == Changelog ==
 
+= 1.1.1 =
+* Hotfix: ship the full Auth module and production Composer `vendor/` in the WordPress.org package (incomplete 1.1.0 ZIP could fatal on activate).
+* Auth / Register: highlight method cards that are Enabled (Live ≠ On).
+
 = 1.1.0 =
 * Stable membership release: user account page, user registration, user profile cabinet.
 * Settings → Pages: replace `wp-login.php` only when the chosen page has an Account block or login shortcode.
 * Move toolbar / subscriber redirect Behavior next to the account page setting.
 * Document every Gutenberg block and its shortcode under Settings → Blocks / Shortcodes.
+* OAuth: prevent cached auth URL / state (REST no-store headers + front-end fetch cache bust).
 * Tested up to WordPress 7.1.
 
 = 1.0.7 =
@@ -172,6 +177,9 @@ No. Email/password, social login, the account page, and Gutenberg blocks work wi
 * Gmail OAuth, shortcodes, WooCommerce integration.
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Reinstall or update if 1.1.0 fatals with PasswordAuth not found — packaging fix only; no settings changes.
 
 = 1.1.0 =
 Stable account hub: set the account page in Settings → Pages, add the Account block or [forwp_account], then optionally replace wp-login.php. Appearance and social button styles are under Appearance.

@@ -3,7 +3,7 @@
  * Plugin Name:       4WP Account
  * Plugin URI:        https://github.com/4wpdev/4wp-account
  * Description:       Membership user account hub — registration, user profile, social login, Gutenberg blocks.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Requires at least: 6.4
  * Tested up to:      7.1
  * Requires PHP:      8.0
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FORWP_ACCOUNT_VERSION', '1.1.0' );
+define( 'FORWP_ACCOUNT_VERSION', '1.1.1' );
 define( 'FORWP_ACCOUNT_PLUGIN_FILE', __FILE__ );
 define( 'FORWP_ACCOUNT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'FORWP_ACCOUNT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

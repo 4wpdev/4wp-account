@@ -198,7 +198,7 @@
 	cursor: pointer;
 	outline: none;
 	padding: 12px 14px 10px;
-	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+	transition: border-color 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
 }
 
 .forwp-account-provider-card:hover {
@@ -209,7 +209,22 @@
 	box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--wp-admin-theme-color, #3858e9);
 }
 
+.forwp-account-provider-card.is-enabled {
+	background: #f6fcf7;
+	border-color: #68de7c;
+}
+
+.forwp-account-provider-card.is-enabled:hover {
+	border-color: #00a32a;
+}
+
 .forwp-account-provider-card.is-selected {
+	border-color: var(--wp-admin-theme-color, #3858e9);
+	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #3858e9);
+}
+
+.forwp-account-provider-card.is-enabled.is-selected {
+	background: #f6fcf7;
 	border-color: var(--wp-admin-theme-color, #3858e9);
 	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #3858e9);
 }
@@ -219,6 +234,13 @@
 	display: flex;
 	gap: 12px;
 	justify-content: space-between;
+}
+
+.forwp-account-provider-card__badges {
+	align-items: center;
+	display: flex;
+	flex-shrink: 0;
+	gap: 6px;
 }
 
 .forwp-account-provider-card__label {
@@ -380,6 +402,11 @@
 .forwp-account-badge--live {
 	background: #edfaef;
 	color: #1e4620;
+}
+
+.forwp-account-badge--on {
+	background: #00a32a;
+	color: #fff;
 }
 
 .forwp-account-badge--soon,
