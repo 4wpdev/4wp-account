@@ -199,7 +199,7 @@ class TikTok extends BaseProvider {
 	protected function get_user_info( $access_token ) {
 		$url = add_query_arg(
 			array(
-				'fields' => 'open_id,union_id,avatar_url,display_name,username',
+				'fields' => 'open_id,union_id,avatar_url,display_name',
 			),
 			$this->user_info_endpoint
 		);
